@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market — BitIO</title>
+  <link rel="stylesheet" href="Style.css">
+  <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
+  <style>
+    .market { margin-top: 56px; background: var(--bg); }
+
+    /* content repeated twice so the scroll wraps without a jump */
+    .ticker { background: var(--bg2); border-bottom: 1px solid var(--line); height: 34px; overflow: hidden; }
+    .ticker-inner {
+      display: flex; white-space: nowrap;
+      animation: scroll 40s linear infinite;
+    }
+    @keyframes scroll { to { transform: translateX(-50%); } }
+    .tick {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: 0 20px; height: 34px;
+      font-family: var(--mono); font-size: .63rem;
+      border-right: 1px solid var(--line); flex-shrink: 0;
+    }
+    .tick .name  { color: var(--muted); }
+    .tick .price { font-weight: 600; }
+    .tick .up    { color: var(--green); }
+    .tick .dn    { color: #ff6b6b; }
+    .tick .fl    { color: var(--muted); }
+
+    .mkt-header {
+      padding: 44px 48px 32px;
+      border-bottom: 1px solid var(--line);
+      display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem;
+    }
+
+    .mkt-body { display: grid; grid-template-columns: 1fr 320px; border-bottom: 1px solid var(--line); }
+    .mkt-left  { padding: 36px 48px; border-right: 1px solid var(--line); }
+    .mkt-right { padding: 36px 28px; }
+
+    .hbar { display: flex; align-items: center; gap: .8rem; margin-bottom: .6rem; }
+    .hbar-name  { font-size: .78rem; font-weight: 600; width: 160px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hbar-track { flex: 1; height: 7px; background: var(--line); }
+    .hbar-fill  { height: 100%; background: var(--green); opacity: .7; }
+    .hbar-val   { font-family: var(--mono); font-size: .63rem; color: var(--muted); width: 48px; text-align: right; flex-shrink: 0; }
+
+    .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 1.4rem; }
+    .cat-card { background: var(--bg2); padding: 13px 15px; }
+    .cat-card .cn { font-family: var(--mono); font-size: .58rem; text-transform: uppercase; color: var(--muted); margin-bottom: .35rem; }
+    .cat-card .cv { font-size: .92rem; font-weight: 700; margin-bottom: .15rem; }
+    .cat-card .cs { font-family: var(--mono); font-size: .58rem; color: var(--muted); }
+
+    .dmnd { font-family: var(--mono); font-size: .54rem; text-transform: uppercase; padding: 2px 6px; border: 1px solid; display: inline-block; margin-top: .3rem; }
+    .d-hi  { color: var(--green); border-color: rgba(0,255,136,.3); }
+    .d-mid { color: #f5c518; border-color: rgba(245,197,24,.3); }
+    .d-lo  { color: var(--muted); border-color: var(--line); }
+
+    .slbl { font-family: var(--mono); font-size: .58rem; text-transform: uppercase; letter-spacing: .13em; color: var(--muted); margin-bottom: .9rem; padding-bottom: .5rem; border-bottom: 1px solid var(--line); }
+
+    .wrow { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); gap: 1rem; }
+    .wrow:last-child { border-bottom: none; }
+    .wrow .wname { font-size: .8rem; font-weight: 600; margin-bottom: .1rem; }
+    .wrow .wcat  { font-family: var(--mono); font-size: .58rem; color: var(--muted); }
+    .wrow .wprice { font-family: var(--mono); font-size: .85rem; text-align: right; }
+    .wrow .wdlt  { font-family: var(--mono); font-size: .6rem; text-align: right; }
+    .wrow .wdlt.up { color: var(--green); }
+    .wrow .wdlt.dn { color: #ff6b6b; }
+
+    .mkt-tbl { padding: 36px 48px 56px; }
+    .tbl { width: 100%; border-collapse: collapse; font-size: .79rem; }
+    .tbl thead tr { border-bottom: 2px solid var(--green); }
+    .tbl th { text-align: left; font-family: var(--mono); font-size: .56rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding: 7px 8px; font-weight: 600; }
+    .tbl td { padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    .tbl tbody tr:last-child td { border-bottom: none; }
+    .tbl tbody tr:hover td { background: var(--bg2); }
+    .mono { font-family: var(--mono); font-size: .73rem; }
+    .fl   { color: var(--muted); }
+
+    .av { font-family: var(--mono); font-size: .56rem; text-transform: uppercase; padding: 2px 7px; border: 1px solid; }
+    .av-in  { color: var(--green); border-color: rgba(0,255,136,.3); }
+    .av-low { color: #f5c518;      border-color: rgba(245,197,24,.3); }
+
+    .tr-up { font-family: var(--mono); font-size: .68rem; color: var(--green); }
+    .tr-dn { font-family: var(--mono); font-size: .68rem; color: #ff6b6b; }
+    .tr-fl { font-family: var(--mono); font-size: .68rem; color: var(--muted); }
+
+    .mkt-filters { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
+    .mf { font-family: var(--mono); font-size: .62rem; padding: 5px 11px; background: transparent; border: 1px solid var(--line); color: var(--muted); cursor: pointer; }
+    .mf:hover { color: var(--text); border-color: var(--muted); }
+    .mf.active { background: var(--green); color: #000; border-color: var(--green); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">BIT<span>IO</span></a>
+  <ul>
+    <li><a href="index.html#products">Products</a></li>
+    <li><a href="market.html" style="color:var(--text);">Market</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="login.html" class="nav-auth">Sign In</a></li>
+    <li><a class="nav-cart" href="cart.html">Cart (<span>0</span>)</a></li>
+    <li><button id="theme-btn" title="Toggle theme">🌙</button></li>
+    <li><a href="settings.html" class="nav-user" title="Settings">&#9888;</a></li>
+  </ul>
+</nav>
+
+<div class="market">
+
+  <!-- ticker — content repeated twice so the scroll loops without a jump -->
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="tick"><span class="name">Arduino Uno</span><span class="price">$24.99</span><span class="fl">— stable</span></span>
+      <span class="tick"><span class="name">ESP32-WROOM</span><span class="price">$8.99</span><span class="up">▲ trending</span></span>
+      <span class="tick"><span class="name">Pi 4B 2GB</span><span class="price">$45.00</span><span class="fl">— stable</span></span>
+      <span class="tick"><span class="name">STM32F103</span><span class="price">$5.49</span><span class="dn">▼ low stock</span></span>
+      <span class="tick"><span class="name">Teensy 4.1</span><span class="price">$29.95</span><span class="fl">— stable</span></span>
+      <span class="tick"><span class="name">nRF52840</span><span class="price">$9.99</span><span class="up">▲ trending</span></span>
+      <span class="tick"><span class="name">0.96" OLED</span><span class="price">$4.99</span><span class="up">▲ popular</span></span>
+      <span class="tick"><span class="name">DHT22</span><span class="price">$5.99</span><span class="fl">— stable</span></span>
+      <span class="tick"><span class="name">BeagleBone</span><span class="price">$55.00</span><span class="dn">▼ low stock</span></span>
+      <span class="tick"><span class="name">Pi Zero 2W</span><span class="price">$15.00</span><span class="up">▲ restocked</span></span>
+      <!-- copy for seamless loop -->
+      <span class="tick"><span class="name">Arduino Uno</span><span class="price">$24.99</span><span class="fl">— stable</span></span>
+      <span class="tick"><span class="name">ESP32-WROOM</span><span class="price">$8.99</span><span class="up">▲ trending</span></span>
+      <span class="tick"><span class="name">Pi 4B 2GB</span><span class="price">$45.00</span><span class="fl">— stable</span></span>
+      <span class="tick"><span class="name">STM32F103</span><span class="price">$5.49</span><span class="dn">▼ low stock</span></span>
+      <span class="tick"><span class="name">Teensy 4.1</span><span class="price">$29.95</span><span class="fl">— stable</span></span>
+      <span class="tick"><span class="name">nRF52840</span><span class="price">$9.99</span><span class="up">▲ trending</span></span>
+      <span class="tick"><span class="name">0.96" OLED</span><span class="price">$4.99</span><span class="up">▲ popular</span></span>
+      <span class="tick"><span class="name">DHT22</span><span class="price">$5.99</span><span class="fl">— stable</span></span>
+      <span class="tick"><span class="name">BeagleBone</span><span class="price">$55.00</span><span class="dn">▼ low stock</span></span>
+      <span class="tick"><span class="name">Pi Zero 2W</span><span class="price">$15.00</span><span class="up">▲ restocked</span></span>
+    </div>
+  </div>
+
+  <!-- header -->
+  <div class="mkt-header">
+    <div>
+      <h1 style="font-size:clamp(1.5rem,3vw,2.2rem); font-weight:700; margin-bottom:.3rem;">Product <span style="color:var(--green);">Market</span></h1>
+      <p style="font-size:.82rem; color:var(--muted); max-width:400px; line-height:1.7;">Stock overview, pricing, and demand for everything we carry. Updated daily.</p>
+    </div>
+    <div style="text-align:right; font-family:var(--mono); font-size:.63rem; color:var(--muted); line-height:1.9;">
+      <strong style="display:block; font-size:1.15rem; color:var(--green); margin-bottom:.1rem;">33</strong>
+      products listed<br>
+      Updated Apr 17, 2026 09:41
+    </div>
+  </div>
+
+  <!-- two-col body: charts left, watchlist right -->
+  <div class="mkt-body">
+
+    <div class="mkt-left">
+      <p class="slbl">Top sellers this month (units)</p>
+      <div style="margin-bottom:2.2rem;">
+        <div class="hbar"><span class="hbar-name">ESP32-WROOM-32</span><div class="hbar-track"><div class="hbar-fill" style="width:94%"></div></div><span class="hbar-val">94 sold</span></div>
+        <div class="hbar"><span class="hbar-name">Arduino Uno Rev3</span><div class="hbar-track"><div class="hbar-fill" style="width:81%"></div></div><span class="hbar-val">81 sold</span></div>
+        <div class="hbar"><span class="hbar-name">Raspberry Pi Pico</span><div class="hbar-track"><div class="hbar-fill" style="width:76%"></div></div><span class="hbar-val">76 sold</span></div>
+        <div class="hbar"><span class="hbar-name">0.96" OLED</span><div class="hbar-track"><div class="hbar-fill" style="width:68%"></div></div><span class="hbar-val">68 sold</span></div>
+        <div class="hbar"><span class="hbar-name">Arduino Nano</span><div class="hbar-track"><div class="hbar-fill" style="width:62%"></div></div><span class="hbar-val">62 sold</span></div>
+        <div class="hbar"><span class="hbar-name">DHT22</span><div class="hbar-track"><div class="hbar-fill" style="width:55%"></div></div><span class="hbar-val">55 sold</span></div>
+        <div class="hbar"><span class="hbar-name">40-Pin Dupont Set</span><div class="hbar-track"><div class="hbar-fill" style="width:49%"></div></div><span class="hbar-val">49 sold</span></div>
+      </div>
+
+      <p class="slbl">Categories</p>
+      <div class="cat-grid">
+        <div class="cat-card"><div class="cn">Microcontrollers</div><div class="cv">6 products</div><div class="cs">$3.99 – $34.99</div><span class="dmnd d-hi">High demand</span></div>
+        <div class="cat-card"><div class="cn">WiFi &amp; BT</div><div class="cv">5 products</div><div class="cs">$5.49 – $12.99</div><span class="dmnd d-hi">High demand</span></div>
+        <div class="cat-card"><div class="cn">SBCs</div><div class="cv">5 products</div><div class="cs">$7.99 – $55.00</div><span class="dmnd d-mid">Medium</span></div>
+        <div class="cat-card"><div class="cn">Displays</div><div class="cv">4 products</div><div class="cs">$4.99 – $19.99</div><span class="dmnd d-hi">High demand</span></div>
+        <div class="cat-card"><div class="cn">Sensors</div><div class="cv">4 products</div><div class="cs">$2.99 – $5.99</div><span class="dmnd d-mid">Medium</span></div>
+        <div class="cat-card"><div class="cn">Cables</div><div class="cv">5 products</div><div class="cs">$1.49 – $7.99</div><span class="dmnd d-lo">Low</span></div>
+        <div class="cat-card"><div class="cn">Breadboards</div><div class="cv">4 products</div><div class="cs">$1.99 – $5.99</div><span class="dmnd d-lo">Low</span></div>
+        <div class="cat-card"><div class="cn">Total</div><div class="cv" style="color:var(--green);">33 products</div><div class="cs">$1.49 – $55.00</div><span class="dmnd d-hi">All in stock*</span></div>
+      </div>
+      <p style="font-family:var(--mono); font-size:.56rem; color:var(--muted); opacity:.7;">* STM32 and BeagleBone critically low — see table below.</p>
+    </div>
+
+    <!-- right column: trending up + low stock + price ranges -->
+    <div class="mkt-right">
+      <p class="slbl">Trending up</p>
+      <div style="margin-bottom:1.8rem;">
+        <div class="wrow"><div><div class="wname">ESP32-WROOM-32</div><div class="wcat">WiFi / BT</div></div><div><div class="wprice">$8.99</div><div class="wdlt up">↑ 94 sold this month</div></div></div>
+        <div class="wrow"><div><div class="wname">nRF52840 Dongle</div><div class="wcat">BT Module</div></div><div><div class="wprice">$9.99</div><div class="wdlt up">↑ new interest</div></div></div>
+        <div class="wrow"><div><div class="wname">Pi Zero 2 W</div><div class="wcat">SBC / Linux</div></div><div><div class="wprice">$15.00</div><div class="wdlt up">↑ restocked Apr 14</div></div></div>
+        <div class="wrow"><div><div class="wname">0.96" OLED</div><div class="wcat">Display</div></div><div><div class="wprice">$4.99</div><div class="wdlt up">↑ 68 sold</div></div></div>
+      </div>
+
+      <p class="slbl">Low stock — act fast</p>
+      <div style="margin-bottom:1.8rem;">
+        <div class="wrow"><div><div class="wname">STM32F103C8T6</div><div class="wcat">Microcontroller</div></div><div><div class="wprice">$5.49</div><div class="wdlt dn">↓ 8 units left</div></div></div>
+        <div class="wrow"><div><div class="wname">BeagleBone Black</div><div class="wcat">SBC / Linux</div></div><div><div class="wprice">$55.00</div><div class="wdlt dn">↓ 5 units left</div></div></div>
+        <div class="wrow"><div><div class="wname">Teensy 4.1</div><div class="wcat">Microcontroller</div></div><div><div class="wprice">$29.95</div><div class="wdlt dn">↓ 22 units left</div></div></div>
+      </div>
+
+      <p class="slbl">Price range</p>
+      <div style="font-size:.78rem;">
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line);"><span style="color:var(--muted);">Cheapest</span><span class="mono">$1.49</span></div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line);"><span style="color:var(--muted);">Average</span><span class="mono">$12.40</span></div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line);"><span style="color:var(--muted);">Median</span><span class="mono">$7.99</span></div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0;"><span style="color:var(--muted);">Most expensive</span><span class="mono">$55.00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- full product table -->
+  <div class="mkt-tbl">
+    <h2 style="font-size:1.1rem; font-weight:700; margin-bottom:1.2rem;">All products <span style="color:var(--green);">/ stock &amp; pricing</span></h2>
+
+    <!-- TODO: hook up filtering -->
+    <div class="mkt-filters">
+      <button class="mf active">All</button>
+      <button class="mf">Microcontrollers</button>
+      <button class="mf">WiFi &amp; BT</button>
+      <button class="mf">SBCs</button>
+      <button class="mf">Displays</button>
+      <button class="mf">Sensors</button>
+      <button class="mf">Cables</button>
+    </div>
+
+    <table class="tbl">
+      <thead>
+        <tr><th>Product</th><th>Category</th><th>Price</th><th>In stock</th><th>Sold MTD</th><th>Trend</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="font-weight:700;">Arduino Uno Rev3</td><td class="mono fl">Microcontroller</td><td class="mono">$24.99</td><td class="mono">72</td><td class="mono">81</td><td><span class="tr-up">↑ +12%</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">Arduino Nano</td><td class="mono fl">Microcontroller</td><td class="mono">$19.99</td><td class="mono">58</td><td class="mono">62</td><td><span class="tr-up">↑ +8%</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">Arduino Mega 2560</td><td class="mono fl">Microcontroller</td><td class="mono">$34.99</td><td class="mono">41</td><td class="mono">37</td><td><span class="tr-fl">— flat</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">STM32F103C8T6</td><td class="mono fl">Microcontroller</td><td class="mono">$5.49</td><td class="mono" style="color:#ff6b6b; font-weight:700;">8</td><td class="mono">44</td><td><span class="tr-dn">↓ critical</span></td><td><span class="av av-low">Critical</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">ATtiny85 Digispark</td><td class="mono fl">Microcontroller</td><td class="mono">$3.99</td><td class="mono">103</td><td class="mono">28</td><td><span class="tr-fl">— flat</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">Teensy 4.1</td><td class="mono fl">Microcontroller</td><td class="mono">$29.95</td><td class="mono" style="color:#f5c518; font-weight:700;">22</td><td class="mono">31</td><td><span class="tr-up">↑ +5%</span></td><td><span class="av av-low">Low stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">ESP32-WROOM-32</td><td class="mono fl">WiFi / BT</td><td class="mono">$8.99</td><td class="mono">88</td><td class="mono">94</td><td><span class="tr-up">↑ +19%</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">ESP8266 NodeMCU</td><td class="mono fl">WiFi</td><td class="mono">$6.99</td><td class="mono">61</td><td class="mono">39</td><td><span class="tr-fl">— flat</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">ESP32-S3 DevKit</td><td class="mono fl">WiFi / BT</td><td class="mono">$12.99</td><td class="mono">47</td><td class="mono">52</td><td><span class="tr-up">↑ +14%</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">nRF52840 Dongle</td><td class="mono fl">BT Module</td><td class="mono">$9.99</td><td class="mono">39</td><td class="mono">33</td><td><span class="tr-up">↑ +22%</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">Raspberry Pi 4 B 2GB</td><td class="mono fl">SBC / Linux</td><td class="mono">$45.00</td><td class="mono" style="color:#f5c518; font-weight:700;">28</td><td class="mono">44</td><td><span class="tr-up">↑ +7%</span></td><td><span class="av av-low">Low stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">Raspberry Pi Pico</td><td class="mono fl">SBC</td><td class="mono">$7.99</td><td class="mono">94</td><td class="mono">76</td><td><span class="tr-up">↑ +11%</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">BeagleBone Black</td><td class="mono fl">SBC / Linux</td><td class="mono">$55.00</td><td class="mono" style="color:#ff6b6b; font-weight:700;">5</td><td class="mono">9</td><td><span class="tr-dn">↓ -3%</span></td><td><span class="av av-low">Critical</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">0.96" OLED 128×64</td><td class="mono fl">Display</td><td class="mono">$4.99</td><td class="mono">53</td><td class="mono">68</td><td><span class="tr-up">↑ +16%</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">DHT22 Temp + Humidity</td><td class="mono fl">Sensor</td><td class="mono">$5.99</td><td class="mono">66</td><td class="mono">55</td><td><span class="tr-up">↑ +8%</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+        <tr><td style="font-weight:700;">MPU-6050 6-Axis IMU</td><td class="mono fl">Sensor</td><td class="mono">$4.49</td><td class="mono">79</td><td class="mono">42</td><td><span class="tr-fl">— flat</span></td><td><span class="av av-in">In stock</span></td><td><a href="index.html#products" style="font-family:var(--mono); font-size:.63rem; color:var(--green); text-decoration:none; border:1px solid rgba(0,255,136,.25); padding:3px 9px;">Buy</a></td></tr>
+      </tbody>
+    </table>
+    <p style="font-family:var(--mono); font-size:.6rem; color:var(--muted); margin-top:1.2rem; opacity:.7;">Showing 16 of 33 — stock counts updated Apr 17 09:41</p>
+  </div>
+
+</div>
+
+<footer>
+  <span class="logo">BIT<span>IO</span></span>
+  <ul>
+    <li><a href="index.html#products">Products</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="#">Docs</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <small>© 2026 BitIO</small>
+</footer>
+
+<script>
+  const btn = document.getElementById('theme-btn');
+  btn.addEventListener('click', () => {
+    const isLight = document.documentElement.classList.contains('light');
+    document.documentElement.classList.toggle('light', !isLight);
+    localStorage.setItem('bitio-theme', isLight ? 'dark' : 'light');
+    btn.textContent = isLight ? '☀️' : '🌙';
+  });
+  if (!document.documentElement.classList.contains('light')) btn.textContent = '☀️';
+</script>
+</body>
+</html>

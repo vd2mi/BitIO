@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — BitIO</title>
+  <link rel="stylesheet" href="Style.css">
+  <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
+  <style>
+    .admin-wrap {
+      display: flex;
+      margin-top: 56px;
+      min-height: calc(100vh - 56px);
+    }
+
+    .sidebar {
+      width: 200px;
+      flex-shrink: 0;
+      background: var(--bg2);
+      border-right: 1px solid var(--line);
+      padding: 24px 0;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+    }
+
+    .t-radio { display: none; }
+
+    .sidebar ul { list-style: none; }
+    .sidebar label {
+      display: flex; align-items: center; gap: .6rem;
+      padding: 9px 18px;
+      font-family: var(--mono); font-size: .7rem; color: var(--muted);
+      cursor: pointer; border-left: 2px solid transparent;
+    }
+    .sidebar label:hover { color: var(--text); background: var(--bg); }
+
+    /* active tab highlight, same approach as settings.html */
+    #a-overview:checked  ~ .admin-wrap label[for="a-overview"],
+    #a-users:checked     ~ .admin-wrap label[for="a-users"],
+    #a-orders:checked    ~ .admin-wrap label[for="a-orders"],
+    #a-inventory:checked ~ .admin-wrap label[for="a-inventory"],
+    #a-returns:checked   ~ .admin-wrap label[for="a-returns"] {
+      color: var(--green); border-left-color: var(--green); background: var(--bg);
+    }
+
+    .admin-main { flex: 1; padding: 36px 44px 72px; background: var(--bg); }
+
+    .panel { display: none; }
+    #a-overview:checked  ~ .admin-wrap #p-overview,
+    #a-users:checked     ~ .admin-wrap #p-users,
+    #a-orders:checked    ~ .admin-wrap #p-orders,
+    #a-inventory:checked ~ .admin-wrap #p-inventory,
+    #a-returns:checked   ~ .admin-wrap #p-returns { display: block; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 2.5rem; }
+    .stat { background: var(--bg2); padding: 16px 18px; }
+    .stat .lbl { font-family: var(--mono); font-size: .56rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: .5rem; }
+    .stat .val { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; margin-bottom: .25rem; }
+    .stat .dlt { font-family: var(--mono); font-size: .6rem; }
+    .up { color: var(--green); }
+    .dn { color: #ff6b6b; }
+    .fl { color: var(--muted); }
+
+    /* bar heights are set inline on each element */
+    .bar-chart { display: flex; align-items: flex-end; gap: 5px; height: 110px; border-bottom: 1px solid var(--line); margin-bottom: 2.5rem; }
+    .bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+    .bar-fill { width: 100%; background: rgba(0,255,136,.22); border-top: 2px solid var(--green); }
+    .bar-fill:hover { background: rgba(0,255,136,.4); }
+    .bar-lbl { font-family: var(--mono); font-size: .52rem; color: var(--muted); margin-top: 5px; }
+
+    .tbl { width: 100%; border-collapse: collapse; font-size: .79rem; }
+    .tbl thead tr { border-bottom: 2px solid var(--green); }
+    .tbl th { text-align: left; font-family: var(--mono); font-size: .56rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding: 7px 8px; font-weight: 600; }
+    .tbl td { padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    .tbl tbody tr:last-child td { border-bottom: none; }
+    .tbl tbody tr:hover td { background: var(--bg2); }
+    .mono { font-family: var(--mono); font-size: .73rem; }
+
+    .badge { font-family: var(--mono); font-size: .56rem; text-transform: uppercase; padding: 2px 7px; border: 1px solid; display: inline-block; }
+    .b-green  { color: var(--green); border-color: rgba(0,255,136,.3); }
+    .b-yellow { color: #f5c518;      border-color: rgba(245,197,24,.3); }
+    .b-red    { color: #ff6b6b;      border-color: rgba(255,107,107,.3); }
+    .b-gray   { color: var(--muted); border-color: var(--line); }
+
+    .tbl-btn { font-family: var(--mono); font-size: .6rem; padding: 3px 9px; background: transparent; border: 1px solid var(--line); color: var(--muted); cursor: pointer; margin-right: .25rem; }
+    .tbl-btn:hover { border-color: var(--green); color: var(--green); }
+    .tbl-btn.red { color: #ff6b6b; border-color: rgba(255,107,107,.3); }
+    .tbl-btn.red:hover { background: rgba(255,107,107,.08); border-color: #ff6b6b; }
+
+    .field { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1.1rem; }
+    .field label { font-family: var(--mono); font-size: .6rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+    .field input, .field textarea, .field select {
+      background: var(--bg2); border: 1px solid var(--line);
+      color: var(--text); font-family: var(--sans); font-size: .84rem; padding: 8px 12px; outline: none;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--green); }
+    .field textarea { resize: vertical; min-height: 75px; }
+    .field select { appearance: none; cursor: pointer; }
+
+    .btn-save { padding: 10px 22px; background: var(--green); color: #000; font-family: var(--sans); font-size: .8rem; font-weight: 700; text-transform: uppercase; border: none; cursor: pointer; }
+    .btn-save:hover { opacity: .85; }
+
+    .sbar-wrap { flex: 1; height: 6px; background: var(--line); }
+    .sbar { height: 100%; background: var(--green); }
+    .sbar.low { background: #f5c518; }
+    .sbar.crit { background: #ff6b6b; }
+
+    .slbl { font-family: var(--mono); font-size: .58rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: .8rem; padding-bottom: .5rem; border-bottom: 1px solid var(--line); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">BIT<span>IO</span> <span style="font-family:var(--mono); font-size:.52rem; color:#f5c518; border:1px solid rgba(245,197,24,.3); padding:2px 6px; margin-left:.4rem; vertical-align:middle;">ADMIN</span></a>
+  <ul>
+    <li><a href="index.html">Storefront</a></li>
+    <li><button id="theme-btn" title="Toggle theme">🌙</button></li>
+    <li><a href="settings.html" class="nav-user" title="Settings">&#9888;</a></li>
+  </ul>
+</nav>
+
+<!-- needs to be before .admin-wrap or the ~ selector breaks -->
+<input class="t-radio" type="radio" id="a-overview"  name="atab" checked>
+<input class="t-radio" type="radio" id="a-users"     name="atab">
+<input class="t-radio" type="radio" id="a-orders"    name="atab">
+<input class="t-radio" type="radio" id="a-inventory" name="atab">
+<input class="t-radio" type="radio" id="a-returns"   name="atab">
+
+<div class="admin-wrap">
+
+  <aside class="sidebar">
+    <p style="font-family:var(--mono); font-size:.54rem; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); padding:0 18px; margin-bottom:1rem;">Dashboard</p>
+    <ul>
+      <li><label for="a-overview">▤  Overview</label></li>
+      <li><label for="a-users">◉  Users</label></li>
+      <li><label for="a-orders">≡  Orders</label></li>
+      <li><label for="a-inventory">⊞  Inventory</label></li>
+      <li><label for="a-returns">↩  Returns</label></li>
+    </ul>
+    <div style="padding:16px 18px; margin-top:auto; font-family:var(--mono); font-size:.62rem; color:var(--muted); line-height:1.8;">
+      Logged in as<br><span style="color:var(--text);">admin@bitio.io</span>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+
+    <!-- OVERVIEW -->
+    <div class="panel" id="p-overview">
+      <h2 style="font-size:1.2rem; margin-bottom:.2rem;">Overview</h2>
+      <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.8rem;">Last 30 days</p>
+
+      <div class="stats">
+        <div class="stat"><div class="lbl">Revenue</div><div class="val">$4,812</div><div class="dlt up">+18% vs last month</div></div>
+        <div class="stat"><div class="lbl">Orders</div><div class="val">134</div><div class="dlt up">+9 this week</div></div>
+        <div class="stat"><div class="lbl">Active users</div><div class="val">312</div><div class="dlt fl">same as last month</div></div>
+        <div class="stat"><div class="lbl">Returns</div><div class="val">7</div><div class="dlt dn">+3 this week</div></div>
+      </div>
+
+      <p class="slbl">Weekly sales — last 8 weeks (USD)</p>
+      <div class="bar-chart">
+        <div class="bar"><div class="bar-fill" style="height:42%"></div><span class="bar-lbl">W10</span></div>
+        <div class="bar"><div class="bar-fill" style="height:58%"></div><span class="bar-lbl">W11</span></div>
+        <div class="bar"><div class="bar-fill" style="height:35%"></div><span class="bar-lbl">W12</span></div>
+        <div class="bar"><div class="bar-fill" style="height:72%"></div><span class="bar-lbl">W13</span></div>
+        <div class="bar"><div class="bar-fill" style="height:60%"></div><span class="bar-lbl">W14</span></div>
+        <div class="bar"><div class="bar-fill" style="height:88%"></div><span class="bar-lbl">W15</span></div>
+        <div class="bar"><div class="bar-fill" style="height:65%"></div><span class="bar-lbl">W16</span></div>
+        <div class="bar"><div class="bar-fill" style="height:95%"></div><span class="bar-lbl">W17</span></div>
+      </div>
+
+      <p class="slbl">Recent orders</p>
+      <table class="tbl">
+        <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">#10034</td><td>Omar Khalil</td><td class="mono fl">Apr 16</td><td>3</td><td class="mono">$47.97</td><td><span class="badge b-yellow">Shipped</span></td></tr>
+          <tr><td class="mono">#10033</td><td>Lara Azar</td><td class="mono fl">Apr 16</td><td>1</td><td class="mono">$8.99</td><td><span class="badge b-gray">Processing</span></td></tr>
+          <tr><td class="mono">#10032</td><td>Rami Saad</td><td class="mono fl">Apr 15</td><td>5</td><td class="mono">$89.43</td><td><span class="badge b-green">Delivered</span></td></tr>
+          <tr><td class="mono">#10031</td><td>Nour Habib</td><td class="mono fl">Apr 15</td><td>2</td><td class="mono">$29.48</td><td><span class="badge b-red">Return req.</span></td></tr>
+          <tr><td class="mono">#10030</td><td>Karim Haddad</td><td class="mono fl">Apr 14</td><td>4</td><td class="mono">$62.95</td><td><span class="badge b-green">Delivered</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- USERS -->
+    <div class="panel" id="p-users">
+      <h2 style="font-size:1.2rem; margin-bottom:.2rem;">Users</h2>
+      <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.6rem;">Ban suspends login access but keeps order history.</p>
+
+      <!-- TODO: search not wired up yet -->
+      <input type="text" placeholder="search by name or email..." style="background:var(--bg2); border:1px solid var(--line); color:var(--text); font-family:var(--mono); font-size:.75rem; padding:8px 13px; outline:none; width:100%; max-width:360px; margin-bottom:1.5rem; display:block;">
+
+      <table class="tbl">
+        <thead><tr><th>User</th><th>Email</th><th>Joined</th><th>Orders</th><th>Spent</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:700;">omar_k</td><td class="mono fl">omar@kmail.com</td><td class="mono fl">Jan 25</td><td>12</td><td class="mono">$341.20</td><td><span class="badge b-green">Active</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Ban</button></td></tr>
+          <tr><td style="font-weight:700;">lara_azar</td><td class="mono fl">lara@example.lb</td><td class="mono fl">Mar 25</td><td>4</td><td class="mono">$78.95</td><td><span class="badge b-green">Active</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Ban</button></td></tr>
+          <tr><td style="font-weight:700;">rami_dev</td><td class="mono fl">rami@univ.edu</td><td class="mono fl">Feb 25</td><td>22</td><td class="mono">$612.80</td><td><span class="badge b-green">Active</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Ban</button></td></tr>
+          <tr><td style="font-weight:700;">nour_h</td><td class="mono fl">nour@habib.io</td><td class="mono fl">Nov 24</td><td>7</td><td class="mono">$193.44</td><td><span class="badge b-red">Banned</span></td><td><button class="tbl-btn up">Unban</button><button class="tbl-btn red">Remove</button></td></tr>
+          <tr><td style="font-weight:700;">karim99</td><td class="mono fl">k.haddad@mail.com</td><td class="mono fl">Aug 24</td><td>18</td><td class="mono">$489.60</td><td><span class="badge b-green">Active</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Ban</button></td></tr>
+          <tr><td style="font-weight:700;">ghost_1337</td><td class="mono fl">anon@proton.me</td><td class="mono fl">Dec 24</td><td>0</td><td class="mono">$0.00</td><td><span class="badge b-gray">Unverified</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Remove</button></td></tr>
+        </tbody>
+      </table>
+      <p style="font-family:var(--mono); font-size:.62rem; color:var(--muted); margin-top:1rem;">Showing 6 of 312</p>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="panel" id="p-orders">
+      <h2 style="font-size:1.2rem; margin-bottom:.2rem;">Orders</h2>
+      <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.6rem;">All transactions. Click Details to expand — not wired up yet.</p>
+
+      <!-- TODO: hook up filtering -->
+      <div style="display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; background:var(--green); color:#000; cursor:pointer;">All</span>
+        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Processing</span>
+        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Shipped</span>
+        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Delivered</span>
+        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Returned</span>
+      </div>
+
+      <table class="tbl">
+        <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Products</th><th>Subtotal</th><th>Ship</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="mono">#10034</td><td>Omar Khalil</td><td class="mono fl">Apr 16</td><td style="font-size:.73rem; color:var(--muted);">ESP32 ×2, USB-C ×1</td><td class="mono">$45.97</td><td class="mono fl">$2.00</td><td class="mono">$47.97</td><td><span class="badge b-yellow">Shipped</span></td><td><button class="tbl-btn">Details</button></td></tr>
+          <tr><td class="mono">#10033</td><td>Lara Azar</td><td class="mono fl">Apr 16</td><td style="font-size:.73rem; color:var(--muted);">ESP32-S3 ×1</td><td class="mono">$6.99</td><td class="mono fl">$2.00</td><td class="mono">$8.99</td><td><span class="badge b-gray">Processing</span></td><td><button class="tbl-btn">Details</button></td></tr>
+          <tr><td class="mono">#10032</td><td>Rami Saad</td><td class="mono fl">Apr 15</td><td style="font-size:.73rem; color:var(--muted);">Pi 4 ×1, DHT22 ×2, OLED ×2</td><td class="mono">$72.93</td><td class="mono fl">$4.50</td><td class="mono">$77.43</td><td><span class="badge b-green">Delivered</span></td><td><button class="tbl-btn">Details</button></td></tr>
+          <tr><td class="mono">#10031</td><td>Nour Habib</td><td class="mono fl">Apr 15</td><td style="font-size:.73rem; color:var(--muted);">Uno ×1, Mega ×1</td><td class="mono">$27.48</td><td class="mono fl">$2.00</td><td class="mono">$29.48</td><td><span class="badge b-red">Return req.</span></td><td><button class="tbl-btn">Details</button></td></tr>
+          <tr><td class="mono">#10030</td><td>Karim Haddad</td><td class="mono fl">Apr 14</td><td style="font-size:.73rem; color:var(--muted);">nRF52840 ×1, BMP280 ×3</td><td class="mono">$20.45</td><td class="mono fl">$2.00</td><td class="mono">$22.45</td><td><span class="badge b-green">Delivered</span></td><td><button class="tbl-btn">Details</button></td></tr>
+          <tr><td class="mono">#10029</td><td>Maria T.</td><td class="mono fl">Apr 14</td><td style="font-size:.73rem; color:var(--muted);">Pi Zero 2W ×2, OLED ×3</td><td class="mono">$47.97</td><td class="mono fl">$3.00</td><td class="mono">$50.97</td><td><span class="badge b-green">Delivered</span></td><td><button class="tbl-btn">Details</button></td></tr>
+        </tbody>
+      </table>
+      <p style="font-family:var(--mono); font-size:.62rem; color:var(--muted); margin-top:1rem;">Showing 6 of 134</p>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="panel" id="p-inventory">
+      <h2 style="font-size:1.2rem; margin-bottom:.2rem;">Inventory</h2>
+      <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.8rem;">Add products and check stock levels.</p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:start;">
+        <div>
+          <p class="slbl">Add product</p>
+          <form onsubmit="return false">
+            <div class="field"><label>Product name</label><input placeholder="e.g. ESP32-WROOM-32"></div>
+            <div class="field">
+              <label>Category</label>
+              <select>
+                <option value="">Select...</option>
+                <option>Microcontroller</option>
+                <option>WiFi / BT Module</option>
+                <option>SBC / Linux</option>
+                <option>Display</option>
+                <option>Sensor</option>
+                <option>Cable</option>
+                <option>Breadboard</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field"><label>Description</label><textarea placeholder="Short one or two sentence description."></textarea></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+              <div class="field"><label>Price (USD)</label><input type="number" placeholder="0.00" step="0.01" min="0"></div>
+              <div class="field"><label>Stock qty</label><input type="number" placeholder="0" min="0"></div>
+            </div>
+            <div class="field"><label>SKU / part number</label><input placeholder="e.g. ESP-WROOM-32D"></div>
+            <button class="btn-save">Add product</button>
+          </form>
+        </div>
+
+        <div>
+          <p class="slbl">Stock levels</p>
+          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
+            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">Arduino Uno Rev3</span>
+            <div class="sbar-wrap"><div class="sbar" style="width:72%"></div></div>
+            <span class="mono fl" style="width:55px; text-align:right;">72 units</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
+            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">ESP32-WROOM-32</span>
+            <div class="sbar-wrap"><div class="sbar" style="width:88%"></div></div>
+            <span class="mono fl" style="width:55px; text-align:right;">88 units</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
+            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">Raspberry Pi 4 B</span>
+            <div class="sbar-wrap"><div class="sbar low" style="width:28%"></div></div>
+            <span class="mono fl" style="width:55px; text-align:right;">28 units</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
+            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">STM32F103C8T6</span>
+            <div class="sbar-wrap"><div class="sbar crit" style="width:8%"></div></div>
+            <span class="mono" style="width:55px; text-align:right; color:#ff6b6b;">8 units</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
+            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">Teensy 4.1</span>
+            <div class="sbar-wrap"><div class="sbar low" style="width:22%"></div></div>
+            <span class="mono fl" style="width:55px; text-align:right;">22 units</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
+            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">BeagleBone Black</span>
+            <div class="sbar-wrap"><div class="sbar crit" style="width:5%"></div></div>
+            <span class="mono" style="width:55px; text-align:right; color:#ff6b6b;">5 units</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
+            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">DHT22</span>
+            <div class="sbar-wrap"><div class="sbar" style="width:66%"></div></div>
+            <span class="mono fl" style="width:55px; text-align:right;">66 units</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0;">
+            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">MPU-6050 IMU</span>
+            <div class="sbar-wrap"><div class="sbar" style="width:79%"></div></div>
+            <span class="mono fl" style="width:55px; text-align:right;">79 units</span>
+          </div>
+          <p style="font-family:var(--mono); font-size:.58rem; color:var(--muted); margin-top:1rem; line-height:1.8;">
+            <span style="color:#ff6b6b;">■</span> Critical (&lt;10) &nbsp;
+            <span style="color:#f5c518;">■</span> Low (&lt;30) &nbsp;
+            <span style="color:var(--green);">■</span> OK
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RETURNS -->
+    <div class="panel" id="p-returns">
+      <h2 style="font-size:1.2rem; margin-bottom:.2rem;">Returns &amp; Refunds</h2>
+      <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.6rem;">Approve sends a refund email. Reject closes the ticket.</p>
+
+      <div style="display:flex; gap:1rem; margin-bottom:2rem;">
+        <div style="background:var(--bg2); border:1px solid var(--line); padding:13px 16px; min-width:110px;">
+          <div style="font-family:var(--mono); font-size:.56rem; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem;">Open</div>
+          <div style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">4</div>
+        </div>
+        <div style="background:var(--bg2); border:1px solid var(--line); padding:13px 16px; min-width:110px;">
+          <div style="font-family:var(--mono); font-size:.56rem; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem;">Approved MTD</div>
+          <div style="font-family:var(--mono); font-size:1.4rem; font-weight:700; color:var(--green);">3</div>
+        </div>
+        <div style="background:var(--bg2); border:1px solid var(--line); padding:13px 16px; min-width:110px;">
+          <div style="font-family:var(--mono); font-size:.56rem; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem;">Refunded MTD</div>
+          <div style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">$113.92</div>
+        </div>
+      </div>
+
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>Order</th><th>Customer</th><th>Product</th><th>Reason</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">R-0021</td><td class="mono">#10031</td><td>Nour Habib</td><td style="font-size:.73rem; color:var(--muted);">Arduino Mega</td><td style="font-size:.73rem; color:var(--muted);">DOA — no UART response</td><td class="mono fl">Apr 15</td><td class="mono">$34.99</td><td><span class="badge b-yellow">Open</span></td><td><button class="tbl-btn up">Approve</button><button class="tbl-btn red">Reject</button></td></tr>
+          <tr><td class="mono">R-0020</td><td class="mono">#10019</td><td>Ali Saleh</td><td style="font-size:.73rem; color:var(--muted);">2.4" TFT</td><td style="font-size:.73rem; color:var(--muted);">Wrong item received</td><td class="mono fl">Apr 13</td><td class="mono">$8.99</td><td><span class="badge b-yellow">Open</span></td><td><button class="tbl-btn up">Approve</button><button class="tbl-btn red">Reject</button></td></tr>
+          <tr><td class="mono">R-0019</td><td class="mono">#10014</td><td>Dana Frem</td><td style="font-size:.73rem; color:var(--muted);">ESP32-C3 ×2</td><td style="font-size:.73rem; color:var(--muted);">Changed mind, unopened</td><td class="mono fl">Apr 10</td><td class="mono">$10.98</td><td><span class="badge b-yellow">Open</span></td><td><button class="tbl-btn up">Approve</button><button class="tbl-btn red">Reject</button></td></tr>
+          <tr><td class="mono">R-0018</td><td class="mono">#10009</td><td>Fadi Khoury</td><td style="font-size:.73rem; color:var(--muted);">BeagleBone Black</td><td style="font-size:.73rem; color:var(--muted);">Damaged in shipping</td><td class="mono fl">Apr 08</td><td class="mono">$55.00</td><td><span class="badge b-yellow">Open</span></td><td><button class="tbl-btn up">Approve</button><button class="tbl-btn red">Reject</button></td></tr>
+          <tr><td class="mono">R-0017</td><td class="mono">#10001</td><td>Rami Saad</td><td style="font-size:.73rem; color:var(--muted);">Raspberry Pi 3 B</td><td style="font-size:.73rem; color:var(--muted);">Not as described</td><td class="mono fl">Mar 30</td><td class="mono">$39.99</td><td><span class="badge b-green">Approved</span></td><td><button class="tbl-btn">Details</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const btn = document.getElementById('theme-btn');
+  btn.addEventListener('click', () => {
+    const isLight = document.documentElement.classList.contains('light');
+    document.documentElement.classList.toggle('light', !isLight);
+    localStorage.setItem('bitio-theme', isLight ? 'dark' : 'light');
+    btn.textContent = isLight ? '☀️' : '🌙';
+  });
+  if (!document.documentElement.classList.contains('light')) btn.textContent = '☀️';
+</script>
+</body>
+</html>

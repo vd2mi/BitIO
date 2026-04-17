@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — BitIO</title>
+  <link rel="stylesheet" href="Style.css">
+  <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
+  <style>
+    .s-wrap {
+      margin-top: 56px;
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      max-width: 960px;
+      margin-inline: auto;
+      padding: 48px 40px 80px;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .s-nav { position: sticky; top: 72px; } /* stays put while the content scrolls */
+
+    .t-radio { display: none; }
+
+    .s-nav ul { list-style: none; border-top: 2px solid var(--green); padding-top: .6rem; }
+    .s-nav li { border-bottom: 1px solid var(--line); }
+    .s-nav label {
+      display: block; padding: 9px 0;
+      font-family: var(--mono); font-size: .7rem;
+      color: var(--muted); cursor: pointer;
+    }
+    .s-nav label:hover { color: var(--text); }
+
+    /* same approach as login.html tabs */
+    #t-profile:checked  ~ .s-wrap label[for="t-profile"],
+    #t-security:checked ~ .s-wrap label[for="t-security"],
+    #t-notifs:checked   ~ .s-wrap label[for="t-notifs"],
+    #t-addr:checked     ~ .s-wrap label[for="t-addr"],
+    #t-danger:checked   ~ .s-wrap label[for="t-danger"] { color: var(--green); }
+
+    .panel { display: none; }
+    #t-profile:checked  ~ .s-wrap #p-profile,
+    #t-security:checked ~ .s-wrap #p-security,
+    #t-notifs:checked   ~ .s-wrap #p-notifs,
+    #t-addr:checked     ~ .s-wrap #p-addr,
+    #t-danger:checked   ~ .s-wrap #p-danger { display: block; }
+
+    .field { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1.2rem; max-width: 460px; }
+    .field label { font-family: var(--mono); font-size: .6rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+    .field input, .field textarea, .field select {
+      background: var(--bg2); border: 1px solid var(--line);
+      color: var(--text); font-family: var(--sans); font-size: .85rem; padding: 9px 13px; outline: none;
+    }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); }
+    .field input::placeholder, .field textarea::placeholder { color: var(--muted); }
+    .field textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
+    .field select { appearance: none; cursor: pointer; }
+    .hint { font-family: var(--mono); font-size: .58rem; color: var(--muted); opacity: .7; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .btn-save {
+      padding: 10px 22px; background: var(--green); color: #000;
+      font-family: var(--sans); font-size: .8rem; font-weight: 700;
+      text-transform: uppercase; border: none; cursor: pointer;
+    }
+    .btn-save:hover { opacity: .85; }
+
+    .btn-ghost {
+      padding: 6px 14px; background: transparent; color: var(--muted);
+      font-family: var(--mono); font-size: .68rem; border: 1px solid var(--line); cursor: pointer;
+    }
+    .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+
+    /* checkbox hidden and restyled to look like a toggle */
+    .toggle input { display: none; }
+    .tog-track {
+      display: block; width: 36px; height: 20px;
+      background: var(--line); border: 1px solid var(--line);
+      cursor: pointer; position: relative;
+    }
+    .tog-track::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px; background: var(--muted);
+      transition: left .15s, background .15s;
+    }
+    .toggle input:checked + .tog-track { border-color: var(--green); background: rgba(0,255,136,.12); }
+    .toggle input:checked + .tog-track::after { left: 18px; background: var(--green); }
+
+    .d-box { border: 1px solid rgba(255,60,60,.25); padding: 18px 20px; max-width: 460px; margin-bottom: 1rem; }
+    .btn-del {
+      padding: 9px 20px; background: transparent; color: #ff4444;
+      font-family: var(--sans); font-size: .78rem; font-weight: 700;
+      text-transform: uppercase; border: 1px solid rgba(255,60,60,.4); cursor: pointer;
+    }
+    .btn-del:hover { background: rgba(255,60,60,.08); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">BIT<span>IO</span></a>
+  <ul>
+    <li><a href="index.html#products">Products</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="login.html" class="nav-auth">Sign In</a></li>
+    <li><a class="nav-cart" href="cart.html">Cart (<span>0</span>)</a></li>
+    <li><button id="theme-btn" title="Toggle theme">🌙</button></li>
+    <li><a href="settings.html" class="nav-user" title="Settings">&#9888;</a></li>
+  </ul>
+</nav>
+
+<!-- has to be before .s-wrap or the tab switching breaks -->
+<input class="t-radio" type="radio" id="t-profile"  name="stab" checked>
+<input class="t-radio" type="radio" id="t-security" name="stab">
+<input class="t-radio" type="radio" id="t-notifs"   name="stab">
+<input class="t-radio" type="radio" id="t-addr"     name="stab">
+<input class="t-radio" type="radio" id="t-danger"   name="stab">
+
+<div class="s-wrap">
+
+  <!-- sidebar -->
+  <aside class="s-nav">
+    <p style="font-family:var(--mono); font-size:.55rem; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); margin-bottom:.7rem;">Account</p>
+    <ul>
+      <li><label for="t-profile">Profile</label></li>
+      <li><label for="t-security">Security</label></li>
+      <li><label for="t-notifs">Notifications</label></li>
+      <li><label for="t-addr">Addresses</label></li>
+      <li><label for="t-danger">Danger Zone</label></li>
+    </ul>
+  </aside>
+
+  <main>
+
+    <!-- PROFILE -->
+    <section class="panel" id="p-profile">
+      <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Profile</h2>
+      <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Your public info.</p>
+
+      <!-- no image upload for now, just initials -->
+      <div style="display:flex; align-items:center; gap:1.2rem; padding-bottom:1.6rem; border-bottom:1px solid var(--line); margin-bottom:1.6rem;">
+        <div style="width:60px; height:60px; background:var(--bg2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:1.3rem; font-weight:700; color:var(--green);">JD</div>
+        <div>
+          <div style="font-weight:700;">john_dev</div>
+          <div style="font-family:var(--mono); font-size:.68rem; color:var(--muted);">john@example.com</div>
+        </div>
+      </div>
+
+      <form onsubmit="return false">
+        <div class="two-col">
+          <div class="field"><label>First name</label><input value="John"></div>
+          <div class="field"><label>Last name</label><input value="Doe"></div>
+        </div>
+        <div class="field">
+          <label>Username</label>
+          <input value="john_dev">
+          <span class="hint">visible to other users on bitio.io/~john_dev</span>
+        </div>
+        <div class="field"><label>Email</label><input type="email" value="john@example.com"></div>
+        <div class="field">
+          <label>Bio</label>
+          <textarea>EE student, building a small army of ESP32s.</textarea>
+          <span class="hint">max 160 chars</span>
+        </div>
+        <button class="btn-save">Save changes</button>
+      </form>
+    </section>
+
+    <!-- SECURITY -->
+    <section class="panel" id="p-security">
+      <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Security</h2>
+      <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Password and active sessions.</p>
+
+      <p style="font-family:var(--mono); font-size:.6rem; text-transform:uppercase; color:var(--muted); margin-bottom:1rem;">Change password</p>
+      <form onsubmit="return false">
+        <div class="field"><label>Current password</label><input type="password" placeholder="••••••••"></div>
+        <div class="field">
+          <label>New password</label>
+          <input type="password" placeholder="••••••••">
+          <span class="hint">at least 8 chars, please don't use "password"</span>
+        </div>
+        <div class="field"><label>Confirm new password</label><input type="password" placeholder="••••••••"></div>
+        <button class="btn-save">Update password</button>
+      </form>
+
+      <hr style="border:none; border-top:1px solid var(--line); margin:2rem 0;">
+
+      <p style="font-family:var(--mono); font-size:.6rem; text-transform:uppercase; color:var(--muted); margin-bottom:1rem;">Active sessions</p>
+        <!-- static for now -->
+      <table style="width:100%; max-width:480px; border-collapse:collapse; font-size:.78rem;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--line);">
+            <th style="text-align:left; font-family:var(--mono); font-size:.58rem; text-transform:uppercase; color:var(--muted); padding:6px 0;">Device</th>
+            <th style="text-align:left; font-family:var(--mono); font-size:.58rem; text-transform:uppercase; color:var(--muted); padding:6px 0;">Location</th>
+            <th style="text-align:left; font-family:var(--mono); font-size:.58rem; text-transform:uppercase; color:var(--muted); padding:6px 0;">Last seen</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--line);">
+            <td style="padding:10px 0; font-weight:700;">Chrome / Windows <span style="font-family:var(--mono); font-size:.6rem; color:var(--green); margin-left:.4rem;">current</span></td>
+            <td style="padding:10px 0; color:var(--muted);">Beirut, LB</td>
+            <td style="padding:10px 0; font-family:var(--mono); font-size:.68rem; color:var(--muted);">Now</td>
+            <td></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--line);">
+            <td style="padding:10px 0; font-weight:700;">Firefox / Linux</td>
+            <td style="padding:10px 0; color:var(--muted);">Beirut, LB</td>
+            <td style="padding:10px 0; font-family:var(--mono); font-size:.68rem; color:var(--muted);">2 days ago</td>
+            <td style="text-align:right;"><button class="btn-ghost">Revoke</button></td>
+          </tr>
+          <tr>
+            <td style="padding:10px 0; font-weight:700;">Safari / iPhone</td>
+            <td style="padding:10px 0; color:var(--muted);">Tripoli, LB</td>
+            <td style="padding:10px 0; font-family:var(--mono); font-size:.68rem; color:var(--muted);">6 days ago</td>
+            <td style="text-align:right;"><button class="btn-ghost">Revoke</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- NOTIFICATIONS -->
+    <section class="panel" id="p-notifs">
+      <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Notifications</h2>
+      <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">We don't spam. Turn things off if you want.</p>
+
+      <!-- each row: text on left, toggle on right -->
+      <ul style="list-style:none;">
+        <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); gap:2rem;">
+          <div>
+            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Order updates</div>
+            <div style="font-size:.75rem; color:var(--muted);">Confirmation, shipping, and delivery.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="tog-track"></span></label>
+        </li>
+        <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); gap:2rem;">
+          <div>
+            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Back in stock</div>
+            <div style="font-size:.75rem; color:var(--muted);">Email when a watched product is available again.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="tog-track"></span></label>
+        </li>
+        <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); gap:2rem;">
+          <div>
+            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Price drops</div>
+            <div style="font-size:.75rem; color:var(--muted);">When the price on a watched item goes down.</div>
+          </div>
+          <label class="toggle"><input type="checkbox"><span class="tog-track"></span></label>
+        </li>
+        <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); gap:2rem;">
+          <div>
+            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Newsletter</div>
+            <div style="font-size:.75rem; color:var(--muted);">Monthly new arrivals digest.</div>
+          </div>
+          <label class="toggle"><input type="checkbox"><span class="tog-track"></span></label>
+        </li>
+        <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; gap:2rem;">
+          <div>
+            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Security alerts</div>
+            <div style="font-size:.75rem; color:var(--muted);">New logins, password changes, etc.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="tog-track"></span></label>
+        </li>
+      </ul>
+
+      <hr style="border:none; border-top:1px solid var(--line); margin:1.8rem 0;">
+      <div class="field" style="max-width:280px; margin-bottom:0;">
+        <label>Email digest</label>
+        <select>
+          <option>Send immediately</option>
+          <option selected>Daily digest</option>
+          <option>Weekly digest</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- ADDRESSES -->
+    <section class="panel" id="p-addr">
+      <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Addresses</h2>
+      <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Saved shipping addresses for faster checkout.</p>
+
+      <!-- existing saved address -->
+      <div style="border:1px solid var(--line); padding:16px 18px; max-width:460px; margin-bottom:1.6rem; position:relative;">
+        <span style="position:absolute; top:12px; right:12px; font-family:var(--mono); font-size:.58rem; color:var(--green); border:1px solid rgba(0,255,136,.25); padding:2px 7px;">default</span>
+        <div style="font-weight:700; margin-bottom:.3rem;">John Doe</div>
+        <div style="font-size:.82rem; color:var(--muted); line-height:1.7;">Bloc A, Apt 12, Hamra St.<br>Beirut, 1107 2020<br>Lebanon</div>
+        <div style="display:flex; gap:.7rem; margin-top:1rem;">
+          <button class="btn-ghost">Edit</button>
+          <button class="btn-ghost">Remove</button>
+        </div>
+      </div>
+
+      <p style="font-family:var(--mono); font-size:.6rem; text-transform:uppercase; color:var(--muted); margin-bottom:1.1rem;">Add new address</p>
+      <form onsubmit="return false">
+        <div class="two-col">
+          <div class="field"><label>First name</label><input placeholder="First name"></div>
+          <div class="field"><label>Last name</label><input placeholder="Last name"></div>
+        </div>
+        <div class="field"><label>Street / building / apt</label><input placeholder="e.g. Bloc A, Apt 12, Hamra St."></div>
+        <div class="field"><label>Line 2 (optional)</label><input placeholder="Floor, unit, etc."></div>
+        <div class="two-col">
+          <div class="field"><label>City</label><input placeholder="City"></div>
+          <div class="field"><label>Postal code</label><input placeholder="Postal code"></div>
+        </div>
+        <div class="field">
+          <label>Country</label>
+          <select>
+            <option>Lebanon</option>
+            <option>United Arab Emirates</option>
+            <option>Saudi Arabia</option>
+            <option>Jordan</option>
+            <option>Egypt</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <button class="btn-save">Save address</button>
+      </form>
+    </section>
+
+    <!-- DANGER ZONE -->
+    <section class="panel" id="p-danger">
+      <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Danger Zone</h2>
+      <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">These can't be undone. Be careful.</p>
+
+      <div class="d-box">
+        <p style="font-family:var(--mono); font-size:.68rem; text-transform:uppercase; color:#ff4444; margin-bottom:.5rem;">Export data</p>
+        <p style="font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:1.1rem;">Download everything: orders, account info, saved addresses. Takes a few minutes to prepare.</p>
+        <button class="btn-ghost">Request data export</button>
+      </div>
+
+      <div class="d-box">
+        <p style="font-family:var(--mono); font-size:.68rem; text-transform:uppercase; color:#ff4444; margin-bottom:.5rem;">Delete account</p>
+        <p style="font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:1.1rem;">Permanently deletes your account and all saved data. Orders already placed won't be affected. This cannot be undone.</p>
+        <button class="btn-del">Delete my account</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <span class="logo">BIT<span>IO</span></span>
+  <ul>
+    <li><a href="index.html#products">Products</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="#">Docs</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <small>© 2026 BitIO</small>
+</footer>
+
+<script>
+  const btn = document.getElementById('theme-btn');
+  btn.addEventListener('click', () => {
+    const isLight = document.documentElement.classList.contains('light');
+    document.documentElement.classList.toggle('light', !isLight);
+    localStorage.setItem('bitio-theme', isLight ? 'dark' : 'light');
+    btn.textContent = isLight ? '☀️' : '🌙';
+  });
+  if (!document.documentElement.classList.contains('light')) btn.textContent = '☀️';
+</script>
+</body>
+</html>

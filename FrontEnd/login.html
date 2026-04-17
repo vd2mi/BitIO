@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — BitIO</title>
+  <link rel="stylesheet" href="Style.css">
+  <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
+</head>
+<body>
+
+<!-- these two radio inputs control which tab shows — pure css trick, no js needed -->
+<input type="radio" id="tab-signin" name="auth-tab" checked class="tab-radio">
+<input type="radio" id="tab-signup" name="auth-tab" class="tab-radio">
+
+<nav>
+  <a class="logo" href="index.html">BIT<span>IO</span></a>
+  <ul>
+    <li><a href="index.html#products">Products</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a class="nav-cart" href="cart.html">Cart</a></li>
+    <li><button id="theme-btn" title="Toggle theme">🌙</button></li>
+    <li><a href="settings.html" class="nav-user" title="Settings">&#9888;</a></li>
+  </ul>
+</nav>
+
+<main class="auth-page">
+  <div class="auth-split">
+
+    <div class="auth-brand">
+      <a class="logo auth-logo" href="index.html">BIT<span>IO</span></a>
+      <p class="auth-tagline">Microcontrollers and dev boards.<br>Sourced right. Shipped fast.</p>
+      <ul class="auth-facts">
+        <li>
+          <span class="auth-fact-label">~500 items</span>
+          <span class="auth-fact-val">in stock, every one verified authentic</span>
+        </li>
+        <li>
+          <span class="auth-fact-label">same-day</span>
+          <span class="auth-fact-val">shipping on orders placed before 2pm</span>
+        </li>
+        <li>
+          <span class="auth-fact-label">zero fakes</span>
+          <span class="auth-fact-val">direct from authorised distributors only</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="auth-form-panel">
+      <!-- labels act as the tab buttons, clicking them checks the radio above -->
+      <div class="auth-tabs">
+        <label for="tab-signin" class="auth-tab">Sign In</label>
+        <label for="tab-signup" class="auth-tab">Create Account</label>
+      </div>
+
+      <form id="form-signin" class="auth-form" action="#">
+        <div class="auth-field">
+          <label for="si-email">Email</label>
+          <input type="email" id="si-email" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="si-pass">Password</label>
+          <input type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password">
+          <!-- href="#forgot-modal" triggers the modal below via css :target, no js -->
+          <a href="#forgot-modal" class="auth-forgot">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-submit">Sign In</button>
+      </form>
+
+      <form id="form-signup" class="auth-form" action="#">
+        <div class="auth-field">
+          <label for="su-name">Full Name</label>
+          <input type="text" id="su-name" placeholder="Ada Lovelace" autocomplete="name">
+        </div>
+        <div class="auth-field">
+          <label for="su-email">Email</label>
+          <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="su-pass">Password</label>
+          <input type="password" id="su-pass" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <div class="auth-field">
+          <label for="su-pass2">Confirm Password</label>
+          <input type="password" id="su-pass2" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn-submit">Create Account</button>
+      </form>
+    </div>
+
+  </div>
+</main>
+
+<!-- forgot password modal — shown when #forgot-modal is the url target, hidden otherwise -->
+<div id="forgot-modal" class="modal-overlay">
+  <div class="modal-box">
+    <!-- href="#" clears the target hash, which hides the modal again -->
+    <a href="#" class="modal-close">&#10005;</a>
+    <p class="modal-label">Account Recovery</p>
+    <h2 class="modal-title">Enter your email</h2>
+    <p class="modal-desc">We'll send a reset link to your inbox. Check spam if it doesn't show up.</p>
+    <form class="modal-form" action="#">
+      <div class="auth-field">
+        <label for="reset-email">Email address</label>
+        <input type="email" id="reset-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <button type="submit" class="btn-submit">Send Reset Link</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // just the theme toggle, nothing else
+  document.getElementById('theme-btn').addEventListener('click', () => {
+    const light = document.documentElement.classList.toggle('light');
+    localStorage.setItem('bitio-theme', light ? 'light' : 'dark');
+    document.getElementById('theme-btn').textContent = light ? '🌙' : '☀';
+  });
+</script>
+
+</body>
+</html>
