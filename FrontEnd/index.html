@@ -7,17 +7,56 @@
   <link rel="stylesheet" href="Style.css">
   <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
   <style>
-    /* product card image */
     .card-img {
       width: 100%; aspect-ratio: 4/3; object-fit: contain;
       background: var(--bg2); margin-bottom: .7rem;
       border-bottom: 1px solid var(--line);
     }
+    .card { cursor: pointer; }
     .card.out-of-stock { opacity: .55; }
     .card.out-of-stock .btn-buy { cursor: not-allowed; }
-    .prod-empty {
-      padding: 3rem 0; text-align: center;
-      font-family: var(--mono); font-size: .78rem; color: var(--muted);
+    .prod-empty { padding: 3rem 0; text-align: center; font-family: var(--mono); font-size: .78rem; color: var(--muted); }
+
+    .overlay-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.65); z-index: 800;
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .overlay-modal.open { display: flex; }
+    .modal-inner {
+      background: var(--bg); border: 1px solid var(--line);
+      max-width: 540px; width: 100%; max-height: 90vh;
+      overflow-y: auto; position: relative;
+    }
+    .modal-inner img { width: 100%; aspect-ratio: 4/3; object-fit: contain; background: var(--bg2); display: block; }
+    .modal-body { padding: 1.5rem; }
+    .modal-close-btn {
+      position: absolute; top: 10px; right: 12px;
+      background: none; border: none; font-size: 1.1rem;
+      color: var(--muted); cursor: pointer; z-index: 1;
+    }
+    .modal-close-btn:hover { color: var(--text); }
+    .qty-row { display: flex; align-items: center; gap: 1rem; margin-top: 1.4rem; }
+    .qty-row input[type=number] {
+      width: 64px; background: var(--bg2); border: 1px solid var(--line);
+      color: var(--text); font-family: var(--mono); font-size: .9rem;
+      padding: 7px 10px; outline: none; text-align: center;
+    }
+    .qty-row input:focus { border-color: var(--green); }
+    .btn-modal-add {
+      flex: 1; padding: 10px; background: var(--green); color: #000;
+      border: none; font-family: var(--sans); font-size: .82rem;
+      font-weight: 700; text-transform: uppercase; cursor: pointer;
+    }
+    .btn-modal-add:hover { opacity: .85; }
+    .btn-modal-add:disabled { opacity: .4; cursor: not-allowed; }
+
+    .help-btn {
+      position: fixed; bottom: 24px; right: 24px; z-index: 600;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--green); color: #000; border: none;
+      font-family: var(--mono); font-size: 1.15rem; font-weight: 700;
+      cursor: pointer; box-shadow: 0 2px 12px rgba(0,0,0,.3);
     }
   </style>
 </head>
@@ -112,6 +151,50 @@
   <small>© 2026 BitIO</small>
 </footer>
 
+<!-- product detail modal -->
+<div id="detail-modal" class="overlay-modal">
+  <div class="modal-inner">
+    <button class="modal-close-btn" id="detail-close">✕</button>
+    <img id="detail-img" src="" alt="" style="display:none;">
+    <div class="modal-body">
+      <div class="cat" id="detail-cat"></div>
+      <h2 id="detail-name" style="margin:.4rem 0 .2rem; font-size:1.25rem;"></h2>
+      <div id="detail-price" style="font-family:var(--mono); font-size:1.1rem; font-weight:700; color:var(--green); margin-bottom:.8rem;"></div>
+      <p id="detail-desc" style="font-size:.83rem; color:var(--muted); line-height:1.65; margin-bottom:1rem;"></p>
+      <div id="detail-specs" style="margin-bottom:.5rem;"></div>
+      <div id="detail-stock" style="font-family:var(--mono); font-size:.68rem; color:var(--muted); margin-bottom:.5rem;"></div>
+      <div class="qty-row">
+        <div style="display:flex; flex-direction:column; gap:.3rem;">
+          <label style="font-family:var(--mono); font-size:.58rem; text-transform:uppercase; color:var(--muted);">Qty</label>
+          <input type="number" id="detail-qty" min="1" value="1">
+        </div>
+        <button class="btn-modal-add" id="detail-add-btn">Add to Cart</button>
+      </div>
+      <div id="detail-msg" style="display:none; margin-top:.8rem; font-family:var(--mono); font-size:.72rem; color:var(--green);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- help window -->
+<button class="help-btn" id="help-btn" title="Help">?</button>
+
+<div id="help-modal" class="overlay-modal">
+  <div class="modal-inner" style="max-width:460px;">
+    <button class="modal-close-btn" id="help-close">✕</button>
+    <div class="modal-body">
+      <h2 style="font-size:1.1rem; margin-bottom:1.2rem;">How to use BitIO</h2>
+      <div style="font-size:.83rem; color:var(--muted); line-height:1.8;">
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Browse products</strong> — scroll down past the 3D boards to see the full catalog. Use the filter buttons or search bar to find what you need.</p>
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Product details</strong> — click anywhere on a product card to open its detail view, where you can set a quantity before adding to cart.</p>
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">3D boards</strong> — click any board in the hero section to inspect it up close. Drag to rotate. Click the hotspot dots to see what each component is.</p>
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Cart</strong> — click the Cart link in the nav. You can change quantities, remove items, or clear the whole cart before checking out.</p>
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Account</strong> — sign up or sign in via the nav link. Your addresses and notification preferences are saved under Settings.</p>
+        <p><strong style="color:var(--text);">Admin</strong> — if your account has admin access, you'll see the full dashboard at /admin.html with product management, orders, and returns.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/db.js"></script>
 <script src="js/auth.js"></script>
@@ -123,7 +206,6 @@
 <script type="module" src="app.js"></script>
 
 <script>
-  // theme toggle
   document.getElementById('theme-btn').addEventListener('click', () => {
     const light = document.documentElement.classList.toggle('light');
     localStorage.setItem('bitio-theme', light ? 'light' : 'dark');
@@ -134,11 +216,8 @@
     return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
 
-  function stockLabel(p) {
-    if (p.stock_status === 'in_stock' && p.stock_quantity > 0) return '';
-    if (p.stock_quantity <= 10 && p.stock_quantity > 0) return 'low stock';
-    return 'out of stock';
-  }
+  // all loaded products stored here so the detail modal can look them up
+  let allProducts = [];
 
   function productCard(p, catName) {
     const outOfStock = p.stock_status === 'out_of_stock' || p.stock_quantity === 0;
@@ -148,7 +227,7 @@
       ? `<img class="card-img" src="${p.image_url}" alt="${p.name}" loading="lazy">`
       : '';
     return `
-      <div class="card${outOfStock ? ' out-of-stock' : ''}">
+      <div class="card${outOfStock ? ' out-of-stock' : ''}" data-pid="${p.id}">
         ${imgHtml}
         <div class="cat">${catName}</div>
         <div class="name">${p.name}</div>
@@ -156,10 +235,9 @@
         <div class="foot">
           <span class="price">$${Number(p.price).toFixed(2)}${label ? `<span style="font-size:.6rem; color:var(--muted); margin-left:.4rem;">${label}</span>` : ''}</span>
           <button class="btn-buy"
-            data-id="${p.id}"
-            data-name="${p.name}"
-            data-price="${p.price}"
-            data-cat="${catName}"
+            data-id="${p.id}" data-name="${p.name}"
+            data-price="${p.price}" data-cat="${catName}"
+            data-stock="${p.stock_quantity}"
             ${outOfStock ? 'disabled' : ''}>
             ${outOfStock ? 'Out of Stock' : 'Add to Cart'}
           </button>
@@ -177,7 +255,6 @@
       btn.textContent = cat.name;
       bar.appendChild(btn);
     });
-
     bar.addEventListener('click', e => {
       const btn = e.target.closest('.prod-filter');
       if (!btn) return;
@@ -204,7 +281,6 @@
     categories.forEach(cat => {
       const catProducts = products.filter(p => p.category_id === cat.id);
       if (catProducts.length === 0) return;
-
       const section = document.createElement('div');
       section.className   = 'prod-section';
       section.dataset.cat = slugify(cat.name);
@@ -215,15 +291,29 @@
       container.appendChild(section);
     });
 
-    // wire up "Add to Cart" buttons
+    // clicking the card body opens detail modal; clicking the button does quick-add
+    container.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', e => {
+        if (e.target.closest('.btn-buy')) return; // let button handle itself
+        const pid = parseInt(card.dataset.pid);
+        const p   = allProducts.find(x => x.id === pid);
+        if (p) openDetailModal(p);
+      });
+    });
+
     container.querySelectorAll('.btn-buy').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
         if (btn.disabled) return;
+        const stock = parseInt(btn.dataset.stock);
+        const inCart = cart.get().find(i => i.id === parseInt(btn.dataset.id))?.qty || 0;
+        if (inCart >= stock) {
+          alert(`Only ${stock} in stock — you already have ${inCart} in your cart.`);
+          return;
+        }
         cart.add({
-          id:       parseInt(btn.dataset.id),
-          name:     btn.dataset.name,
-          price:    parseFloat(btn.dataset.price),
-          category: btn.dataset.cat
+          id: parseInt(btn.dataset.id), name: btn.dataset.name,
+          price: parseFloat(btn.dataset.price), category: btn.dataset.cat
         });
         const orig = btn.textContent;
         btn.textContent = '✓ Added';
@@ -232,7 +322,6 @@
     });
   }
 
-  // search filter
   document.getElementById('prod-search').addEventListener('input', e => {
     const q = e.target.value.toLowerCase();
     document.querySelectorAll('.card').forEach(card => {
@@ -243,26 +332,103 @@
   });
 
   async function loadProducts() {
-    const { data: categories, error: catErr } = await db
-      .from('categories')
-      .select('*')
-      .order('name');
-
-    const { data: products, error: prodErr } = await db
+    const { data: categories } = await db.from('categories').select('*').order('name');
+    const { data: products }   = await db
       .from('products')
-      .select('*')
+      .select('*, product_specs(*)')
       .order('name');
 
-    if (catErr || prodErr) {
+    if (!products) {
       document.getElementById('prod-container').innerHTML =
-        '<p class="prod-empty">Could not load products. Check the console.</p>';
-      console.error(catErr || prodErr);
+        '<p class="prod-empty">Could not load products.</p>';
       return;
     }
 
+    const catById = {};
+    (categories || []).forEach(c => { catById[c.id] = c.name; });
+    products.forEach(p => { p._catName = catById[p.category_id] || ''; });
+
+    allProducts = products;
     buildFilterBar(categories || []);
-    buildProductGrid(categories || [], products || []);
+    buildProductGrid(categories || [], products);
   }
+
+  // product detail modal
+  function openDetailModal(p) {
+    const outOfStock = p.stock_status === 'out_of_stock' || p.stock_quantity === 0;
+
+    document.getElementById('detail-img').src     = p.image_url || '';
+    document.getElementById('detail-img').style.display = p.image_url ? 'block' : 'none';
+    document.getElementById('detail-cat').textContent   = p._catName || '';
+    document.getElementById('detail-name').textContent  = p.name;
+    document.getElementById('detail-price').textContent = '$' + Number(p.price).toFixed(2);
+    document.getElementById('detail-desc').textContent  = p.description || '';
+    document.getElementById('detail-stock').textContent =
+      outOfStock ? 'Out of stock' : `${p.stock_quantity} in stock`;
+
+    const specsEl = document.getElementById('detail-specs');
+    const specs   = p.product_specs || [];
+    specsEl.innerHTML = specs.length
+      ? `<div class="specs">${specs.sort((a,b) => a.sort_order - b.sort_order)
+          .map(s => `<div class="spec-row"><span class="k">${s.spec_key}</span><span class="v">${s.spec_value}</span></div>`)
+          .join('')}</div>`
+      : '';
+
+    const qtyInput = document.getElementById('detail-qty');
+    qtyInput.max   = p.stock_quantity;
+    qtyInput.value = 1;
+
+    const addBtn = document.getElementById('detail-add-btn');
+    addBtn.disabled     = outOfStock;
+    addBtn.textContent  = outOfStock ? 'Out of Stock' : 'Add to Cart';
+    addBtn.onclick = () => {
+      const qty = parseInt(qtyInput.value) || 1;
+      if (qty < 1 || qty > p.stock_quantity) {
+        document.getElementById('detail-msg').style.display = 'block';
+        document.getElementById('detail-msg').style.color   = '#ff4444';
+        document.getElementById('detail-msg').textContent   = `Max available: ${p.stock_quantity}`;
+        return;
+      }
+      const inCart = cart.get().find(i => i.id === p.id)?.qty || 0;
+      if (inCart + qty > p.stock_quantity) {
+        document.getElementById('detail-msg').style.display = 'block';
+        document.getElementById('detail-msg').style.color   = '#ff4444';
+        document.getElementById('detail-msg').textContent   = `Only ${p.stock_quantity} in stock — you already have ${inCart} in your cart.`;
+        return;
+      }
+      for (let i = 0; i < qty; i++) {
+        cart.add({ id: p.id, name: p.name, price: parseFloat(p.price), category: p._catName || '' });
+      }
+      document.getElementById('detail-msg').style.display = 'block';
+      document.getElementById('detail-msg').style.color   = 'var(--green)';
+      document.getElementById('detail-msg').textContent   = `${qty} × ${p.name} added to cart.`;
+      setTimeout(() => closeDetailModal(), 1200);
+    };
+
+    document.getElementById('detail-msg').style.display = 'none';
+    document.getElementById('detail-modal').classList.add('open');
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detail-modal').classList.remove('open');
+  }
+
+  document.getElementById('detail-close').addEventListener('click', closeDetailModal);
+  document.getElementById('detail-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('detail-modal')) closeDetailModal();
+  });
+
+  // help modal
+  document.getElementById('help-btn').addEventListener('click', () => {
+    document.getElementById('help-modal').classList.add('open');
+  });
+  document.getElementById('help-close').addEventListener('click', () => {
+    document.getElementById('help-modal').classList.remove('open');
+  });
+  document.getElementById('help-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('help-modal'))
+      document.getElementById('help-modal').classList.remove('open');
+  });
 
   document.addEventListener('DOMContentLoaded', async () => {
     await auth.init();
