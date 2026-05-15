@@ -6,7 +6,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 // tried OrbitControls here but it was blocking click/select events completely
 // import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-const BOARDS = [
+// fallback boards used when the DB is empty or unreachable
+const DEFAULT_BOARDS = [
   {
     name: 'Arduino Uno Rev3', price: '$24.99', category: 'Microcontroller',
     path: '../3DModels/arduino_uno_board.glb', wx: -10, scale: 3.2,
@@ -53,32 +54,9 @@ const BOARDS = [
 
 document.getElementById('theme-btn').addEventListener('click', () => {
   const light = document.documentElement.classList.toggle('light');
-  localStorage.setItem('bitio-theme', light ? 'light' : 'dark'); // save so it sticks on the other pages
+  localStorage.setItem('bitio-theme', light ? 'light' : 'dark');
   scene.background = new THREE.Color(light ? 0xf5f2ee : 0x191919);
   document.getElementById('theme-btn').textContent = light ? '🌙' : '☀';
-});
-
-let cartCount = 0;
-function bumpCart() {
-  // little pop on the counter so you know the click registered
-  cartCount++;
-  const el = document.getElementById('cart-n');
-  el.textContent = cartCount;
-  el.style.transform = 'scale(1.4)';
-  setTimeout(() => el.style.transform = '', 180);
-}
-document.querySelectorAll('.btn-buy').forEach(btn => btn.addEventListener('click', bumpCart));
-
-// category filters — "all" shows everything, anything else hides the other sections
-document.querySelectorAll('.prod-filter').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.prod-filter').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const cat = btn.dataset.cat;
-    document.querySelectorAll('.prod-section').forEach(section => {
-      section.style.display = (cat === 'all' || section.dataset.cat === cat) ? '' : 'none';
-    });
-  });
 });
 
 const canvas   = document.getElementById('c3d');
@@ -90,10 +68,9 @@ renderer.toneMappingExposure = 0.85;
 renderer.outputColorSpace    = THREE.SRGBColorSpace;
 
 const scene = new THREE.Scene();
-// match the bg to whatever theme is active on load so there's no flash
 scene.background = new THREE.Color(document.documentElement.classList.contains('light') ? 0xf5f2ee : 0x191919);
 
-// MeshStandardMaterial needs an env map or everything looks grey, plain lights aren't enough (fixed by Abdulrahman)
+// MeshStandardMaterial needs an env map or everything looks grey (fixed by Abdulrahman)
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment()).texture;
 pmrem.dispose();
@@ -109,21 +86,15 @@ const accent = new THREE.PointLight(0x00ff88, 1.2, 20);
 accent.position.set(0, 6, 4);
 scene.add(accent);
 
-// TODO: add a fill light from below for the detail view so the underside isn't so dark
-
 let mode = 'loading', selected = -1, loaded = 0, animStart = null, lastTime = 0;
 
-// camera lerp targets — these get updated when selecting/deselecting boards
 const camTarget = new THREE.Vector3(0, 2, 16);
 const lookTarget = new THREE.Vector3(0, 0, 0);
 const camLook   = new THREE.Vector3(0, 0, 0);
 
-const boards = BOARDS.map(d => ({
-  data: d, group: new THREE.Group(),
-  model: null, landed: false,
-  opacity: 1, opTarget: 1, hsEls: [],
-}));
-boards.forEach(b => { b.group.position.set(b.data.wx, 30, 0); scene.add(b.group); });
+// boards populated in start() after DB fetch
+let boards = [];
+let BOARDS = DEFAULT_BOARDS; // whichever data ends up being used
 
 const draco = new DRACOLoader();
 draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
@@ -146,41 +117,43 @@ loader.register(parser => ({
   },
 }));
 
-boards.forEach(b => {
-  loader.load(b.data.path, gltf => {
-    const m = gltf.scene;
-    console.log('loaded:', b.data.name, gltf);
+function loadModels() {
+  boards.forEach(b => {
+    loader.load(b.data.path, gltf => {
+      const m = gltf.scene;
+      console.log('loaded:', b.data.name, gltf);
 
-    const box = new THREE.Box3().setFromObject(m);
-    m.scale.setScalar((5.0 / box.getSize(new THREE.Vector3()).length()) * b.data.scale);
-    m.position.sub(new THREE.Box3().setFromObject(m).getCenter(new THREE.Vector3()));
+      const box = new THREE.Box3().setFromObject(m);
+      m.scale.setScalar((5.0 / box.getSize(new THREE.Vector3()).length()) * b.data.scale);
+      m.position.sub(new THREE.Box3().setFromObject(m).getCenter(new THREE.Vector3()));
 
-    // hide the flat base plate some GLBs have (threshold is tiny or it eats the PCB too)
-    const full = new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());
-    m.traverse(n => {
-      if (!n.isMesh) return;
-      const s = new THREE.Box3().setFromObject(n).getSize(new THREE.Vector3());
-      if (s.x > full.x * 0.6 && s.z > full.z * 0.6 && s.y < 0.005 * Math.max(s.x, s.z))
-        n.visible = false;
+      // hide the flat base plate some GLBs have
+      const full = new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());
+      m.traverse(n => {
+        if (!n.isMesh) return;
+        const s = new THREE.Box3().setFromObject(n).getSize(new THREE.Vector3());
+        if (s.x > full.x * 0.6 && s.z > full.z * 0.6 && s.y < 0.005 * Math.max(s.x, s.z))
+          n.visible = false;
+      });
+
+      m.traverse(n => {
+        if (!n.isMesh) return;
+        const mats = Array.isArray(n.material) ? n.material : [n.material];
+        n.material = mats.length === 1
+          ? Object.assign(mats[0].clone(), { transparent: true })
+          : mats.map(x => Object.assign(x.clone(), { transparent: true }));
+      });
+
+      b.group.add(m);
+      b.model = m;
+      if (++loaded === boards.length) onReady();
+
+    }, undefined, err => {
+      console.warn('load failed:', b.data.path, err);
+      if (++loaded === boards.length) onReady();
     });
-
-    m.traverse(n => {
-      if (!n.isMesh) return;
-      const mats = Array.isArray(n.material) ? n.material : [n.material];
-      n.material = mats.length === 1
-        ? Object.assign(mats[0].clone(), { transparent: true })
-        : mats.map(x => Object.assign(x.clone(), { transparent: true }));
-    });
-
-    b.group.add(m);
-    b.model = m;
-    if (++loaded === boards.length) onReady();
-
-  }, undefined, err => {
-    console.warn('load failed:', b.data.path, err);
-    if (++loaded === boards.length) onReady();
   });
-});
+}
 
 function onReady() {
   const layer = document.getElementById('hs-layer');
@@ -199,7 +172,7 @@ function onReady() {
 }
 
 function selectBoard(idx) {
-  boards.forEach(b => b.hsEls.forEach(el => el.classList.remove('on'))); // clear or they stick
+  boards.forEach(b => b.hsEls.forEach(el => el.classList.remove('on')));
   selected = idx;
   mode = 'detail';
   camTarget.set(BOARDS[idx].wx - 1.5, 2, 8);
@@ -245,7 +218,6 @@ function toNDC(e) {
   mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
 }
 
-// drag rotates the board, small movement = click
 let dragBoard = -1, dragX = 0, didDrag = false;
 
 canvas.addEventListener('pointerdown', e => {
@@ -279,21 +251,30 @@ canvas.addEventListener('pointerup', e => {
 });
 
 document.getElementById('panel-close').addEventListener('click', deselectBoard);
+
 document.getElementById('btn-add').addEventListener('click', () => {
   if (selected === -1) return;
-  bumpCart();
+  const d = BOARDS[selected];
+  // add to cart using the product data from whichever source we loaded
+  if (typeof cart !== 'undefined') {
+    cart.add({
+      id:       d.id || selected,   // DB id if available, else fallback index
+      name:     d.name,
+      price:    parseFloat(String(d.price).replace('$', '')),
+      category: d.category
+    });
+  }
   const btn = document.getElementById('btn-add'), orig = btn.innerHTML;
   btn.textContent = '✓ Added!';
   setTimeout(() => btn.innerHTML = orig, 1600);
 });
+
 window.addEventListener('keydown', e => e.key === 'Escape' && deselectBoard());
 window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
 });
-
-// TODO: keyboard arrow keys to switch between boards would be nice
 
 const _w = new THREE.Vector3(), _s = new THREE.Vector3();
 function updateHotspots() {
@@ -334,7 +315,6 @@ const clock = new THREE.Clock();
         b.group.position.y = Math.sin(time * 0.7 + i * 1.3) * 0.07;
         if (mode === 'idle')      b.group.rotation.y += 0.25 * dt;
         else if (i !== selected)  b.group.rotation.y += 0.05 * dt;
-        // selected board holds whatever rotation the user dragged it to
       }
 
       if (Math.abs(b.opacity - b.opTarget) > 0.002) {
@@ -355,3 +335,55 @@ const clock = new THREE.Clock();
 
   renderer.render(scene, camera);
 }());
+
+// fetch 3D board products from DB, fall back to defaults if empty
+async function start() {
+  let boardData = DEFAULT_BOARDS;
+
+  if (typeof window.db !== 'undefined') {
+    try {
+      const { data } = await window.db
+        .from('products')
+        .select('*, product_specs(*), product_hotspots(*), categories(name)')
+        .not('model_path', 'is', null)
+        .order('id')
+        .limit(3);
+
+      if (data && data.length > 0) {
+        const xPositions = [-10, 0, 10];
+        boardData = data.map((p, i) => ({
+          id:       p.id,
+          name:     p.name,
+          price:    `$${Number(p.price).toFixed(2)}`,
+          category: p.categories?.name || 'Microcontroller',
+          path:     p.model_path,
+          wx:       xPositions[i] ?? 0,
+          scale:    2.5,
+          desc:     p.description || '',
+          specs: (p.product_specs || [])
+            .sort((a, b) => a.sort_order - b.sort_order)
+            .map(s => [s.spec_key, s.spec_value]),
+          hotspots: (p.product_hotspots || []).map(h => ({
+            label: h.label,
+            lp:    [h.x_coord, h.y_coord, h.z_coord]
+          }))
+        }));
+      }
+    } catch (e) {
+      console.warn('DB board load failed, using defaults:', e);
+    }
+  }
+
+  BOARDS = boardData;
+
+  boards = boardData.map(d => ({
+    data: d, group: new THREE.Group(),
+    model: null, landed: false,
+    opacity: 1, opTarget: 1, hsEls: [],
+  }));
+  boards.forEach(b => { b.group.position.set(b.data.wx, 30, 0); scene.add(b.group); });
+
+  loadModels();
+}
+
+start();

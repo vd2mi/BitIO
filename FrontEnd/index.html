@@ -6,10 +6,23 @@
   <title>BitIO — Microcontroller Store</title>
   <link rel="stylesheet" href="Style.css">
   <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
+  <style>
+    /* product card image */
+    .card-img {
+      width: 100%; aspect-ratio: 4/3; object-fit: contain;
+      background: var(--bg2); margin-bottom: .7rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .card.out-of-stock { opacity: .55; }
+    .card.out-of-stock .btn-buy { cursor: not-allowed; }
+    .prod-empty {
+      padding: 3rem 0; text-align: center;
+      font-family: var(--mono); font-size: .78rem; color: var(--muted);
+    }
+  </style>
 </head>
 <body>
 
-<!-- nav -->
 <nav>
   <a class="logo" href="#hero">BIT<span>IO</span></a>
   <ul>
@@ -23,7 +36,7 @@
   </ul>
 </nav>
 
-<!-- hero — three.js canvas -->
+<!-- hero -->
 <section id="hero">
   <canvas id="c3d"></canvas>
   <div id="hs-layer"></div>
@@ -35,7 +48,6 @@
     <p class="hint"> click any board </p>
   </div>
 
-  <!-- detail panel, shown when a board is clicked -->
   <div id="panel">
     <button id="panel-close">✕</button>
     <span class="p-type" id="p-badge"></span>
@@ -75,263 +87,17 @@
 
 <!-- products -->
 <section id="products">
-  <h2>In Stock <span>33 items</span></h2>
+  <h2>In Stock <span id="product-count">—</span></h2>
 
-  <!-- filter buttons — "All" is the default, clicking a category hides the rest -->
-  <div class="prod-filters">
+  <div class="prod-filters" id="filter-bar">
     <button class="prod-filter active" data-cat="all">All</button>
-    <button class="prod-filter" data-cat="microcontrollers">Microcontrollers</button>
-    <button class="prod-filter" data-cat="wifi-bt">WiFi &amp; BT</button>
-    <button class="prod-filter" data-cat="sbcs">SBCs</button>
-    <button class="prod-filter" data-cat="screens">Screens &amp; Displays</button>
-    <button class="prod-filter" data-cat="breadboards">Breadboards</button>
-    <button class="prod-filter" data-cat="cables">Cables</button>
-    <button class="prod-filter" data-cat="sensors">Sensors</button>
   </div>
 
-  <!-- search bar is here but doesn't do anything yet, maybe next milestone -->
-  <input class="prod-search" type="text" placeholder="search products..." />
+  <input class="prod-search" type="text" placeholder="search products..." id="prod-search" />
 
-  <div class="prod-section" data-cat="microcontrollers">
-    <h3 class="prod-cat-heading">Microcontrollers</h3>
-    <div class="prod-grid">
-      <div class="card">
-        <div class="cat">Microcontroller</div>
-        <div class="name">Arduino Uno Rev3</div>
-        <div class="desc">14 digital I/O, 6 analog, 32 KB flash. The classic starting point for embedded work.</div>
-        <div class="foot"><span class="price">$24.99</span><button class="btn-buy" data-name="Arduino Uno Rev3" data-price="24.99" data-cat="Microcontroller">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Microcontroller</div>
-        <div class="name">Arduino Nano</div>
-        <div class="desc">Same AVR core as the Uno in a compact DIP package. Fits straight on a breadboard.</div>
-        <div class="foot"><span class="price">$19.99</span><button class="btn-buy" data-name="Arduino Nano" data-price="19.99" data-cat="Microcontroller">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Microcontroller</div>
-        <div class="name">Arduino Mega 2560</div>
-        <div class="desc">54 digital I/O, 16 analog inputs, 256 KB flash. For when the Uno runs out of pins.</div>
-        <div class="foot"><span class="price">$34.99</span><button class="btn-buy" data-name="Arduino Mega 2560" data-price="34.99" data-cat="Microcontroller">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Microcontroller</div>
-        <div class="name">STM32F103C8T6</div>
-        <div class="desc">ARM Cortex-M3 at 72 MHz, 64 KB flash, 20 KB SRAM. The Blue Pill — tiny and very fast.</div>
-        <div class="foot"><span class="price">$5.49</span><button class="btn-buy" data-name="STM32F103C8T6" data-price="5.49" data-cat="Microcontroller">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Microcontroller</div>
-        <div class="name">ATtiny85 Digispark</div>
-        <div class="desc">8-pin AVR with built-in USB. Fits where nothing else can. 8 KB flash, 5 usable I/O pins.</div>
-        <div class="foot"><span class="price">$3.99</span><button class="btn-buy" data-name="ATtiny85 Digispark" data-price="3.99" data-cat="Microcontroller">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Microcontroller</div>
-        <div class="name">Teensy 4.1</div>
-        <div class="desc">Cortex-M7 at 600 MHz, 8 MB flash, 1 MB RAM. The fastest Arduino-compatible board available.</div>
-        <div class="foot"><span class="price">$29.95</span><button class="btn-buy" data-name="Teensy 4.1" data-price="29.95" data-cat="Microcontroller">Buy</button></div>
-      </div>
-    </div>
+  <div id="prod-container">
+    <p class="prod-empty">Loading products...</p>
   </div>
-
-  <div class="prod-section" data-cat="wifi-bt">
-    <h3 class="prod-cat-heading">WiFi &amp; BT Modules</h3>
-    <div class="prod-grid">
-      <div class="card">
-        <div class="cat">WiFi / BT Module</div>
-        <div class="name">ESP32-WROOM-32</div>
-        <div class="desc">Dual-core 240 MHz, WiFi 802.11, Bluetooth 4.2. Best-value IoT chip on the market.</div>
-        <div class="foot"><span class="price">$8.99</span><button class="btn-buy" data-name="ESP32-WROOM-32" data-price="8.99" data-cat="WiFi / BT Module">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">WiFi Module</div>
-        <div class="name">ESP8266 NodeMCU</div>
-        <div class="desc">80 MHz, 4 MB flash, 11 GPIO. The original $7 WiFi chip. Older but still widely used.</div>
-        <div class="foot"><span class="price">$6.99</span><button class="btn-buy" data-name="ESP8266 NodeMCU" data-price="6.99" data-cat="WiFi Module">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">WiFi / BT Module</div>
-        <div class="name">ESP32-S3 DevKit</div>
-        <div class="desc">Newer ESP32 variant with USB OTG, PSRAM, and AI acceleration. Excellent for edge ML.</div>
-        <div class="foot"><span class="price">$12.99</span><button class="btn-buy" data-name="ESP32-S3 DevKit" data-price="12.99" data-cat="WiFi / BT Module">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">WiFi / BT Module</div>
-        <div class="name">ESP32-C3 Mini</div>
-        <div class="desc">Single-core RISC-V at 160 MHz. WiFi + BLE 5 in a tiny footprint. Ultra low power draw.</div>
-        <div class="foot"><span class="price">$5.49</span><button class="btn-buy" data-name="ESP32-C3 Mini" data-price="5.49" data-cat="WiFi / BT Module">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">BT Module</div>
-        <div class="name">nRF52840 Dongle</div>
-        <div class="desc">Nordic BLE 5 + 802.15.4 USB dongle. Ideal for Zigbee/Thread sniffing and custom HID devices.</div>
-        <div class="foot"><span class="price">$9.99</span><button class="btn-buy" data-name="nRF52840 Dongle" data-price="9.99" data-cat="BT Module">Buy</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="prod-section" data-cat="sbcs">
-    <h3 class="prod-cat-heading">Single-Board Computers</h3>
-    <div class="prod-grid">
-      <div class="card">
-        <div class="cat">SBC / Linux</div>
-        <div class="name">Raspberry Pi 3 B</div>
-        <div class="desc">Quad-core 1.2 GHz ARM, 1 GB RAM, HDMI, 4× USB, WiFi + Bluetooth built in.</div>
-        <div class="foot"><span class="price">$39.99</span><button class="btn-buy" data-name="Raspberry Pi 3 B" data-price="39.99" data-cat="SBC / Linux">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">SBC / Linux</div>
-        <div class="name">Raspberry Pi 4 B 2GB</div>
-        <div class="desc">Cortex-A72 quad-core 1.8 GHz, 2 GB LPDDR4, dual 4K HDMI, USB 3.0, Gigabit Ethernet.</div>
-        <div class="foot"><span class="price">$45.00</span><button class="btn-buy" data-name="Raspberry Pi 4 B 2GB" data-price="45.00" data-cat="SBC / Linux">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">SBC</div>
-        <div class="name">Raspberry Pi Pico</div>
-        <div class="desc">RP2040 dual-core ARM M0+, 264 KB SRAM. MicroPython and the C/C++ SDK both work great.</div>
-        <div class="foot"><span class="price">$7.99</span><button class="btn-buy" data-name="Raspberry Pi Pico" data-price="7.99" data-cat="SBC">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">SBC / Linux</div>
-        <div class="name">Raspberry Pi Zero 2 W</div>
-        <div class="desc">Cortex-A53 quad-core 1 GHz, 512 MB RAM, camera connector, WiFi, BT. Size of a stick of gum.</div>
-        <div class="foot"><span class="price">$15.00</span><button class="btn-buy" data-name="Raspberry Pi Zero 2 W" data-price="15.00" data-cat="SBC / Linux">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">SBC / Linux</div>
-        <div class="name">BeagleBone Black</div>
-        <div class="desc">AM335x 1 GHz ARM, 512 MB DDR3, 4 GB eMMC, 2× 46-pin headers, real-time PRU co-processors.</div>
-        <div class="foot"><span class="price">$55.00</span><button class="btn-buy" data-name="BeagleBone Black" data-price="55.00" data-cat="SBC / Linux">Buy</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="prod-section" data-cat="screens">
-    <h3 class="prod-cat-heading">Screens &amp; Displays</h3>
-    <div class="prod-grid">
-      <div class="card">
-        <div class="cat">Display</div>
-        <div class="name">0.96" OLED 128×64</div>
-        <div class="desc">SSD1306, I2C interface. High-contrast monochrome OLED. Works with every Arduino library.</div>
-        <div class="foot"><span class="price">$4.99</span><button class="btn-buy" data-name="0.96in OLED 128x64" data-price="4.99" data-cat="Display">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Display</div>
-        <div class="name">1.3" OLED 128×64 SPI</div>
-        <div class="desc">SH1106, SPI interface. Slightly larger than the 0.96" with a visibly sharper edge-to-edge image.</div>
-        <div class="foot"><span class="price">$5.99</span><button class="btn-buy" data-name="1.3in OLED 128x64 SPI" data-price="5.99" data-cat="Display">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Display</div>
-        <div class="name">2.4" TFT ILI9341</div>
-        <div class="desc">240×320 color LCD, SPI, resistive touch overlay. Direct driver support in Adafruit GFX library.</div>
-        <div class="foot"><span class="price">$8.99</span><button class="btn-buy" data-name="2.4in TFT ILI9341" data-price="8.99" data-cat="Display">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Display</div>
-        <div class="name">2.9" e-Paper 296×128</div>
-        <div class="desc">Bistable display. Holds the image with zero power. Good Waveshare HAT and Arduino compatibility.</div>
-        <div class="foot"><span class="price">$19.99</span><button class="btn-buy" data-name="2.9in e-Paper 296x128" data-price="19.99" data-cat="Display">Buy</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="prod-section" data-cat="breadboards">
-    <h3 class="prod-cat-heading">Breadboards &amp; Prototyping</h3>
-    <div class="prod-grid">
-      <div class="card">
-        <div class="cat">Breadboard</div>
-        <div class="name">830-Tie Solderless Board</div>
-        <div class="desc">Full-size, 830 tie points. Power rails on both sides. Sturdy adhesive backing included.</div>
-        <div class="foot"><span class="price">$3.99</span><button class="btn-buy" data-name="830-Tie Solderless Board" data-price="3.99" data-cat="Breadboard">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Breadboard</div>
-        <div class="name">400-Tie Mini Breadboard</div>
-        <div class="desc">Half-size, 400 tie points. Single power rail strip. Snaps together with other mini boards.</div>
-        <div class="foot"><span class="price">$1.99</span><button class="btn-buy" data-name="400-Tie Mini Breadboard" data-price="1.99" data-cat="Breadboard">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">PCB</div>
-        <div class="name">Double-Sided PCB 5×7 cm</div>
-        <div class="desc">10-pack. FR4 double-sided prototype boards. Standard 2.54mm through-hole pitch. Solid builds.</div>
-        <div class="foot"><span class="price">$5.99</span><button class="btn-buy" data-name="Double-Sided PCB 5x7cm" data-price="5.99" data-cat="PCB">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">PCB</div>
-        <div class="name">Strip Board 9×15 cm</div>
-        <div class="desc">Single-sided Veroboard-style strip board. Pre-tinned copper strips on 2.54mm grid. 540 holes.</div>
-        <div class="foot"><span class="price">$2.49</span><button class="btn-buy" data-name="Strip Board 9x15cm" data-price="2.49" data-cat="PCB">Buy</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="prod-section" data-cat="cables">
-    <h3 class="prod-cat-heading">Cables &amp; Connectors</h3>
-    <div class="prod-grid">
-      <div class="card">
-        <div class="cat">Cable</div>
-        <div class="name">USB-A to Micro-B 1m</div>
-        <div class="desc">28/24 AWG shielded. Data + charge. Works with Arduino Uno, Nano, and most dev boards.</div>
-        <div class="foot"><span class="price">$1.99</span><button class="btn-buy" data-name="USB-A to Micro-B 1m" data-price="1.99" data-cat="Cable">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Cable</div>
-        <div class="name">USB-A to USB-C 1m</div>
-        <div class="desc">USB 2.0, 3A capable. Works with ESP32-S3, Raspberry Pi 4, Teensy 4.x, and more.</div>
-        <div class="foot"><span class="price">$2.49</span><button class="btn-buy" data-name="USB-A to USB-C 1m" data-price="2.49" data-cat="Cable">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Jumper Wires</div>
-        <div class="name">40-Pin Dupont Set M/F/FF</div>
-        <div class="desc">120 pieces, 20cm length. Male-to-Male, Male-to-Female, Female-to-Female assortment in one pack.</div>
-        <div class="foot"><span class="price">$2.99</span><button class="btn-buy" data-name="40-Pin Dupont Set" data-price="2.99" data-cat="Jumper Wires">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Connector</div>
-        <div class="name">JST-PH 2-Pin Pairs</div>
-        <div class="desc">5 pairs male + female. Standard 2mm pitch LiPo/battery connector. Pre-crimped leads, 15cm.</div>
-        <div class="foot"><span class="price">$1.49</span><button class="btn-buy" data-name="JST-PH 2-Pin Pairs" data-price="1.49" data-cat="Connector">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Wire</div>
-        <div class="name">Hook-Up Wire 22AWG 6-Color</div>
-        <div class="desc">Solid-core, 6 spools × 10m. Black, red, white, green, blue, yellow. Breadboard-friendly gauge.</div>
-        <div class="foot"><span class="price">$7.99</span><button class="btn-buy" data-name="Hook-Up Wire 22AWG" data-price="7.99" data-cat="Wire">Buy</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="prod-section" data-cat="sensors">
-    <h3 class="prod-cat-heading">Sensors</h3>
-    <div class="prod-grid">
-      <div class="card">
-        <div class="cat">Sensor</div>
-        <div class="name">HC-SR04 Ultrasonic</div>
-        <div class="desc">2–400 cm range, ±3 mm accuracy. Trig/Echo interface. The go-to distance sensor for prototyping.</div>
-        <div class="foot"><span class="price">$2.99</span><button class="btn-buy" data-name="HC-SR04 Ultrasonic" data-price="2.99" data-cat="Sensor">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Sensor</div>
-        <div class="name">DHT22 Temp + Humidity</div>
-        <div class="desc">-40–80°C, ±0.5°C accuracy. Capacitive humidity 0–100% RH. Single-wire protocol, 3.3–5V.</div>
-        <div class="foot"><span class="price">$5.99</span><button class="btn-buy" data-name="DHT22 Temp + Humidity" data-price="5.99" data-cat="Sensor">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Sensor</div>
-        <div class="name">MPU-6050 6-Axis IMU</div>
-        <div class="desc">3-axis gyro + 3-axis accelerometer, I2C. Built-in DMP for orientation fusion. 3.3V or 5V.</div>
-        <div class="foot"><span class="price">$4.49</span><button class="btn-buy" data-name="MPU-6050 6-Axis IMU" data-price="4.49" data-cat="Sensor">Buy</button></div>
-      </div>
-      <div class="card">
-        <div class="cat">Sensor</div>
-        <div class="name">BMP280 Pressure / Altitude</div>
-        <div class="desc">±1 hPa absolute pressure, I2C/SPI, 1.8–3.6V. Measures pressure and temperature. Very fast.</div>
-        <div class="foot"><span class="price">$3.49</span><button class="btn-buy" data-name="BMP280 Pressure/Altitude" data-price="3.49" data-cat="Sensor">Buy</button></div>
-      </div>
-    </div>
-  </div>
-
 </section>
 
 <!-- footer -->
@@ -346,10 +112,164 @@
   <small>© 2026 BitIO</small>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/cart.js"></script>
+
 <script type="importmap">
 { "imports": { "three": "https://esm.sh/three@0.170.0", "three/addons/": "https://esm.sh/three@0.170.0/examples/jsm/" } }
 </script>
 <script type="module" src="app.js"></script>
+
+<script>
+  // theme toggle
+  document.getElementById('theme-btn').addEventListener('click', () => {
+    const light = document.documentElement.classList.toggle('light');
+    localStorage.setItem('bitio-theme', light ? 'light' : 'dark');
+    document.getElementById('theme-btn').textContent = light ? '🌙' : '☀';
+  });
+
+  function slugify(str) {
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  function stockLabel(p) {
+    if (p.stock_status === 'in_stock' && p.stock_quantity > 0) return '';
+    if (p.stock_quantity <= 10 && p.stock_quantity > 0) return 'low stock';
+    return 'out of stock';
+  }
+
+  function productCard(p, catName) {
+    const outOfStock = p.stock_status === 'out_of_stock' || p.stock_quantity === 0;
+    const lowStock   = !outOfStock && p.stock_quantity <= 10;
+    const label      = outOfStock ? 'out of stock' : (lowStock ? `${p.stock_quantity} left` : '');
+    const imgHtml    = p.image_url
+      ? `<img class="card-img" src="${p.image_url}" alt="${p.name}" loading="lazy">`
+      : '';
+    return `
+      <div class="card${outOfStock ? ' out-of-stock' : ''}">
+        ${imgHtml}
+        <div class="cat">${catName}</div>
+        <div class="name">${p.name}</div>
+        <div class="desc">${p.description || ''}</div>
+        <div class="foot">
+          <span class="price">$${Number(p.price).toFixed(2)}${label ? `<span style="font-size:.6rem; color:var(--muted); margin-left:.4rem;">${label}</span>` : ''}</span>
+          <button class="btn-buy"
+            data-id="${p.id}"
+            data-name="${p.name}"
+            data-price="${p.price}"
+            data-cat="${catName}"
+            ${outOfStock ? 'disabled' : ''}>
+            ${outOfStock ? 'Out of Stock' : 'Add to Cart'}
+          </button>
+        </div>
+      </div>`;
+  }
+
+  function buildFilterBar(categories) {
+    const bar = document.getElementById('filter-bar');
+    bar.innerHTML = '<button class="prod-filter active" data-cat="all">All</button>';
+    categories.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className   = 'prod-filter';
+      btn.dataset.cat = slugify(cat.name);
+      btn.textContent = cat.name;
+      bar.appendChild(btn);
+    });
+
+    bar.addEventListener('click', e => {
+      const btn = e.target.closest('.prod-filter');
+      if (!btn) return;
+      bar.querySelectorAll('.prod-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.cat;
+      document.querySelectorAll('.prod-section').forEach(sec => {
+        sec.style.display = (cat === 'all' || sec.dataset.cat === cat) ? '' : 'none';
+      });
+    });
+  }
+
+  function buildProductGrid(categories, products) {
+    const container = document.getElementById('prod-container');
+    container.innerHTML = '';
+
+    if (!products || products.length === 0) {
+      container.innerHTML = '<p class="prod-empty">No products found.</p>';
+      return;
+    }
+
+    document.getElementById('product-count').textContent = products.length + ' items';
+
+    categories.forEach(cat => {
+      const catProducts = products.filter(p => p.category_id === cat.id);
+      if (catProducts.length === 0) return;
+
+      const section = document.createElement('div');
+      section.className   = 'prod-section';
+      section.dataset.cat = slugify(cat.name);
+      section.innerHTML   = `
+        <h3 class="prod-cat-heading">${cat.name}</h3>
+        <div class="prod-grid">${catProducts.map(p => productCard(p, cat.name)).join('')}</div>
+      `;
+      container.appendChild(section);
+    });
+
+    // wire up "Add to Cart" buttons
+    container.querySelectorAll('.btn-buy').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.disabled) return;
+        cart.add({
+          id:       parseInt(btn.dataset.id),
+          name:     btn.dataset.name,
+          price:    parseFloat(btn.dataset.price),
+          category: btn.dataset.cat
+        });
+        const orig = btn.textContent;
+        btn.textContent = '✓ Added';
+        setTimeout(() => btn.textContent = orig, 1200);
+      });
+    });
+  }
+
+  // search filter
+  document.getElementById('prod-search').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('.card').forEach(card => {
+      const name = card.querySelector('.name')?.textContent.toLowerCase() || '';
+      const desc = card.querySelector('.desc')?.textContent.toLowerCase() || '';
+      card.style.display = (!q || name.includes(q) || desc.includes(q)) ? '' : 'none';
+    });
+  });
+
+  async function loadProducts() {
+    const { data: categories, error: catErr } = await db
+      .from('categories')
+      .select('*')
+      .order('name');
+
+    const { data: products, error: prodErr } = await db
+      .from('products')
+      .select('*')
+      .order('name');
+
+    if (catErr || prodErr) {
+      document.getElementById('prod-container').innerHTML =
+        '<p class="prod-empty">Could not load products. Check the console.</p>';
+      console.error(catErr || prodErr);
+      return;
+    }
+
+    buildFilterBar(categories || []);
+    buildProductGrid(categories || [], products || []);
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await auth.init();
+    cart.updateNavCount();
+    await loadProducts();
+  });
+</script>
 
 </body>
 </html>

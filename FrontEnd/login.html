@@ -9,7 +9,6 @@
 </head>
 <body>
 
-<!-- these two radio inputs control which tab shows — pure css trick, no js needed -->
 <input type="radio" id="tab-signin" name="auth-tab" checked class="tab-radio">
 <input type="radio" id="tab-signup" name="auth-tab" class="tab-radio">
 
@@ -21,7 +20,6 @@
     <li><a href="index.html#about">About</a></li>
     <li><a class="nav-cart" href="cart.html">Cart</a></li>
     <li><button id="theme-btn" title="Toggle theme">🌙</button></li>
-    <li><a href="settings.html" class="nav-user" title="Settings">&#9888;</a></li>
   </ul>
 </nav>
 
@@ -48,11 +46,13 @@
     </div>
 
     <div class="auth-form-panel">
-      <!-- labels act as the tab buttons, clicking them checks the radio above -->
       <div class="auth-tabs">
         <label for="tab-signin" class="auth-tab">Sign In</label>
         <label for="tab-signup" class="auth-tab">Create Account</label>
       </div>
+
+      <!-- error/success message shown above the form -->
+      <div id="auth-msg" style="display:none; padding:9px 13px; margin-bottom:1rem; font-family:var(--mono); font-size:.73rem;"></div>
 
       <form id="form-signin" class="auth-form" action="#">
         <div class="auth-field">
@@ -62,16 +62,23 @@
         <div class="auth-field">
           <label for="si-pass">Password</label>
           <input type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password">
-          <!-- href="#forgot-modal" triggers the modal below via css :target, no js -->
           <a href="#forgot-modal" class="auth-forgot">Forgot password?</a>
         </div>
-        <button type="submit" class="btn-submit">Sign In</button>
+        <button type="submit" class="btn-submit" id="btn-signin">Sign In</button>
       </form>
 
       <form id="form-signup" class="auth-form" action="#">
         <div class="auth-field">
-          <label for="su-name">Full Name</label>
-          <input type="text" id="su-name" placeholder="Ada Lovelace" autocomplete="name">
+          <label for="su-fname">First name</label>
+          <input type="text" id="su-fname" placeholder="Ada" autocomplete="given-name">
+        </div>
+        <div class="auth-field">
+          <label for="su-lname">Last name</label>
+          <input type="text" id="su-lname" placeholder="Lovelace" autocomplete="family-name">
+        </div>
+        <div class="auth-field">
+          <label for="su-username">Username</label>
+          <input type="text" id="su-username" placeholder="ada_lovelace" autocomplete="username">
         </div>
         <div class="auth-field">
           <label for="su-email">Email</label>
@@ -85,37 +92,160 @@
           <label for="su-pass2">Confirm Password</label>
           <input type="password" id="su-pass2" placeholder="••••••••" autocomplete="new-password">
         </div>
-        <button type="submit" class="btn-submit">Create Account</button>
+        <button type="submit" class="btn-submit" id="btn-signup">Create Account</button>
       </form>
     </div>
 
   </div>
 </main>
 
-<!-- forgot password modal — shown when #forgot-modal is the url target, hidden otherwise -->
+<!-- forgot password modal -->
 <div id="forgot-modal" class="modal-overlay">
   <div class="modal-box">
-    <!-- href="#" clears the target hash, which hides the modal again -->
     <a href="#" class="modal-close">&#10005;</a>
     <p class="modal-label">Account Recovery</p>
     <h2 class="modal-title">Enter your email</h2>
     <p class="modal-desc">We'll send a reset link to your inbox. Check spam if it doesn't show up.</p>
-    <form class="modal-form" action="#">
+    <form class="modal-form" id="form-reset" action="#">
       <div class="auth-field">
         <label for="reset-email">Email address</label>
         <input type="email" id="reset-email" placeholder="you@example.com" autocomplete="email">
       </div>
-      <button type="submit" class="btn-submit">Send Reset Link</button>
+      <div id="reset-msg" style="display:none; padding:9px 13px; margin-bottom:1rem; font-family:var(--mono); font-size:.73rem;"></div>
+      <button type="submit" class="btn-submit" id="btn-reset">Send Reset Link</button>
     </form>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/db.js"></script>
 <script>
-  // just the theme toggle, nothing else
+  // theme toggle
   document.getElementById('theme-btn').addEventListener('click', () => {
     const light = document.documentElement.classList.toggle('light');
     localStorage.setItem('bitio-theme', light ? 'light' : 'dark');
     document.getElementById('theme-btn').textContent = light ? '🌙' : '☀';
+  });
+
+  // if already logged in, go home
+  db.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = 'index.html';
+  });
+
+  function showMsg(id, text, isErr) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.style.display = 'block';
+    el.style.background = isErr ? 'rgba(255,68,68,.12)' : 'rgba(0,255,136,.10)';
+    el.style.color      = isErr ? '#ff4444' : 'var(--green)';
+    el.style.border     = isErr ? '1px solid rgba(255,68,68,.3)' : '1px solid rgba(0,255,136,.3)';
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.disabled  = loading;
+    btn.style.opacity = loading ? '.6' : '1';
+  }
+
+  document.getElementById('form-signin').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('si-email').value.trim();
+    const pass  = document.getElementById('si-pass').value;
+
+    if (!email || !pass) { showMsg('auth-msg', 'Fill in both fields.', true); return; }
+
+    setLoading('btn-signin', true);
+    const { error } = await db.auth.signInWithPassword({ email, password: pass });
+    setLoading('btn-signin', false);
+
+    if (error) {
+      showMsg('auth-msg', error.message, true);
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
+
+  document.getElementById('form-signup').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const fname    = document.getElementById('su-fname').value.trim();
+    const lname    = document.getElementById('su-lname').value.trim();
+    const username = document.getElementById('su-username').value.trim();
+    const email    = document.getElementById('su-email').value.trim();
+    const pass     = document.getElementById('su-pass').value;
+    const pass2    = document.getElementById('su-pass2').value;
+
+    if (!fname || !username || !email || !pass) {
+      showMsg('auth-msg', 'Please fill in all fields.', true); return;
+    }
+    if (pass !== pass2) {
+      showMsg('auth-msg', 'Passwords do not match.', true); return;
+    }
+    if (pass.length < 6) {
+      showMsg('auth-msg', 'Password must be at least 6 characters.', true); return;
+    }
+    if (!/^[a-z0-9_]+$/i.test(username)) {
+      showMsg('auth-msg', 'Username can only contain letters, numbers, and underscores.', true); return;
+    }
+
+    setLoading('btn-signup', true);
+
+    const { data, error } = await db.auth.signUp({ email, password: pass });
+    if (error) {
+      showMsg('auth-msg', error.message, true);
+      setLoading('btn-signup', false);
+      return;
+    }
+
+    if (data.user) {
+      const { error: profileErr } = await db.from('users').insert({
+        username:      username,
+        email:         email,
+        password_hash: 'managed_by_supabase_auth',
+        first_name:    fname,
+        last_name:     lname || '',
+        role:          'customer',
+        status:        'active'
+      });
+
+      if (profileErr) {
+        // most likely a duplicate username
+        if (profileErr.code === '23505') {
+          showMsg('auth-msg', 'That username is already taken. Try a different one.', true);
+        } else {
+          showMsg('auth-msg', 'Account created but profile setup failed: ' + profileErr.message, true);
+        }
+        setLoading('btn-signup', false);
+        return;
+      }
+    }
+
+    setLoading('btn-signup', false);
+
+    if (data.session) {
+      window.location.href = 'index.html';
+    } else {
+      showMsg('auth-msg', 'Account created! Check your inbox to confirm your email, then sign in.', false);
+    }
+  });
+
+  document.getElementById('form-reset').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('reset-email').value.trim();
+    if (!email) return;
+
+    setLoading('btn-reset', true);
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/FrontEnd/login.html'
+    });
+    setLoading('btn-reset', false);
+
+    if (error) {
+      showMsg('reset-msg', error.message, true);
+    } else {
+      showMsg('reset-msg', 'Reset link sent — check your inbox.', false);
+      document.getElementById('btn-reset').style.display = 'none';
+    }
   });
 </script>
 

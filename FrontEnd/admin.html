@@ -7,21 +7,12 @@
   <link rel="stylesheet" href="Style.css">
   <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
   <style>
-    .admin-wrap {
-      display: flex;
-      margin-top: 56px;
-      min-height: calc(100vh - 56px);
-    }
+    .admin-wrap { display: flex; margin-top: 56px; min-height: calc(100vh - 56px); }
 
     .sidebar {
-      width: 200px;
-      flex-shrink: 0;
-      background: var(--bg2);
-      border-right: 1px solid var(--line);
-      padding: 24px 0;
-      position: sticky;
-      top: 56px;
-      height: calc(100vh - 56px);
+      width: 200px; flex-shrink: 0; background: var(--bg2);
+      border-right: 1px solid var(--line); padding: 24px 0;
+      position: sticky; top: 56px; height: calc(100vh - 56px);
     }
 
     .t-radio { display: none; }
@@ -35,7 +26,6 @@
     }
     .sidebar label:hover { color: var(--text); background: var(--bg); }
 
-    /* active tab highlight, same approach as settings.html */
     #a-overview:checked  ~ .admin-wrap label[for="a-overview"],
     #a-users:checked     ~ .admin-wrap label[for="a-users"],
     #a-orders:checked    ~ .admin-wrap label[for="a-orders"],
@@ -58,11 +48,8 @@
     .stat .lbl { font-family: var(--mono); font-size: .56rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: .5rem; }
     .stat .val { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; margin-bottom: .25rem; }
     .stat .dlt { font-family: var(--mono); font-size: .6rem; }
-    .up { color: var(--green); }
-    .dn { color: #ff6b6b; }
-    .fl { color: var(--muted); }
+    .up { color: var(--green); } .dn { color: #ff6b6b; } .fl { color: var(--muted); }
 
-    /* bar heights are set inline on each element */
     .bar-chart { display: flex; align-items: flex-end; gap: 5px; height: 110px; border-bottom: 1px solid var(--line); margin-bottom: 2.5rem; }
     .bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
     .bar-fill { width: 100%; background: rgba(0,255,136,.22); border-top: 2px solid var(--green); }
@@ -87,6 +74,7 @@
     .tbl-btn:hover { border-color: var(--green); color: var(--green); }
     .tbl-btn.red { color: #ff6b6b; border-color: rgba(255,107,107,.3); }
     .tbl-btn.red:hover { background: rgba(255,107,107,.08); border-color: #ff6b6b; }
+    .tbl-btn.grn { color: var(--green); border-color: rgba(0,255,136,.3); }
 
     .field { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1.1rem; }
     .field label { font-family: var(--mono); font-size: .6rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
@@ -120,7 +108,6 @@
   </ul>
 </nav>
 
-<!-- needs to be before .admin-wrap or the ~ selector breaks -->
 <input class="t-radio" type="radio" id="a-overview"  name="atab" checked>
 <input class="t-radio" type="radio" id="a-users"     name="atab">
 <input class="t-radio" type="radio" id="a-orders"    name="atab">
@@ -139,7 +126,7 @@
       <li><label for="a-returns">↩  Returns</label></li>
     </ul>
     <div style="padding:16px 18px; margin-top:auto; font-family:var(--mono); font-size:.62rem; color:var(--muted); line-height:1.8;">
-      Logged in as<br><span style="color:var(--text);">admin@bitio.io</span>
+      Logged in as<br><span id="admin-email" style="color:var(--text);">—</span>
     </div>
   </aside>
 
@@ -151,33 +138,17 @@
       <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.8rem;">Last 30 days</p>
 
       <div class="stats">
-        <div class="stat"><div class="lbl">Revenue</div><div class="val">$4,812</div><div class="dlt up">+18% vs last month</div></div>
-        <div class="stat"><div class="lbl">Orders</div><div class="val">134</div><div class="dlt up">+9 this week</div></div>
-        <div class="stat"><div class="lbl">Active users</div><div class="val">312</div><div class="dlt fl">same as last month</div></div>
-        <div class="stat"><div class="lbl">Returns</div><div class="val">7</div><div class="dlt dn">+3 this week</div></div>
-      </div>
-
-      <p class="slbl">Weekly sales — last 8 weeks (USD)</p>
-      <div class="bar-chart">
-        <div class="bar"><div class="bar-fill" style="height:42%"></div><span class="bar-lbl">W10</span></div>
-        <div class="bar"><div class="bar-fill" style="height:58%"></div><span class="bar-lbl">W11</span></div>
-        <div class="bar"><div class="bar-fill" style="height:35%"></div><span class="bar-lbl">W12</span></div>
-        <div class="bar"><div class="bar-fill" style="height:72%"></div><span class="bar-lbl">W13</span></div>
-        <div class="bar"><div class="bar-fill" style="height:60%"></div><span class="bar-lbl">W14</span></div>
-        <div class="bar"><div class="bar-fill" style="height:88%"></div><span class="bar-lbl">W15</span></div>
-        <div class="bar"><div class="bar-fill" style="height:65%"></div><span class="bar-lbl">W16</span></div>
-        <div class="bar"><div class="bar-fill" style="height:95%"></div><span class="bar-lbl">W17</span></div>
+        <div class="stat"><div class="lbl">Revenue</div><div class="val" id="stat-revenue">—</div></div>
+        <div class="stat"><div class="lbl">Orders</div><div class="val" id="stat-orders">—</div></div>
+        <div class="stat"><div class="lbl">Users</div><div class="val" id="stat-users">—</div></div>
+        <div class="stat"><div class="lbl">Open Returns</div><div class="val" id="stat-returns">—</div></div>
       </div>
 
       <p class="slbl">Recent orders</p>
       <table class="tbl">
-        <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td class="mono">#10034</td><td>Omar Khalil</td><td class="mono fl">Apr 16</td><td>3</td><td class="mono">$47.97</td><td><span class="badge b-yellow">Shipped</span></td></tr>
-          <tr><td class="mono">#10033</td><td>Lara Azar</td><td class="mono fl">Apr 16</td><td>1</td><td class="mono">$8.99</td><td><span class="badge b-gray">Processing</span></td></tr>
-          <tr><td class="mono">#10032</td><td>Rami Saad</td><td class="mono fl">Apr 15</td><td>5</td><td class="mono">$89.43</td><td><span class="badge b-green">Delivered</span></td></tr>
-          <tr><td class="mono">#10031</td><td>Nour Habib</td><td class="mono fl">Apr 15</td><td>2</td><td class="mono">$29.48</td><td><span class="badge b-red">Return req.</span></td></tr>
-          <tr><td class="mono">#10030</td><td>Karim Haddad</td><td class="mono fl">Apr 14</td><td>4</td><td class="mono">$62.95</td><td><span class="badge b-green">Delivered</span></td></tr>
+        <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody id="recent-orders-body">
+          <tr><td colspan="5" style="color:var(--muted); font-family:var(--mono); font-size:.72rem;">Loading...</td></tr>
         </tbody>
       </table>
     </div>
@@ -187,49 +158,36 @@
       <h2 style="font-size:1.2rem; margin-bottom:.2rem;">Users</h2>
       <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.6rem;">Ban suspends login access but keeps order history.</p>
 
-      <!-- TODO: search not wired up yet -->
-      <input type="text" placeholder="search by name or email..." style="background:var(--bg2); border:1px solid var(--line); color:var(--text); font-family:var(--mono); font-size:.75rem; padding:8px 13px; outline:none; width:100%; max-width:360px; margin-bottom:1.5rem; display:block;">
+      <input type="text" id="user-search" placeholder="search by username or email..." style="background:var(--bg2); border:1px solid var(--line); color:var(--text); font-family:var(--mono); font-size:.75rem; padding:8px 13px; outline:none; width:100%; max-width:360px; margin-bottom:1.5rem; display:block;">
 
       <table class="tbl">
-        <thead><tr><th>User</th><th>Email</th><th>Joined</th><th>Orders</th><th>Spent</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          <tr><td style="font-weight:700;">omar_k</td><td class="mono fl">omar@kmail.com</td><td class="mono fl">Jan 25</td><td>12</td><td class="mono">$341.20</td><td><span class="badge b-green">Active</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Ban</button></td></tr>
-          <tr><td style="font-weight:700;">lara_azar</td><td class="mono fl">lara@example.lb</td><td class="mono fl">Mar 25</td><td>4</td><td class="mono">$78.95</td><td><span class="badge b-green">Active</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Ban</button></td></tr>
-          <tr><td style="font-weight:700;">rami_dev</td><td class="mono fl">rami@univ.edu</td><td class="mono fl">Feb 25</td><td>22</td><td class="mono">$612.80</td><td><span class="badge b-green">Active</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Ban</button></td></tr>
-          <tr><td style="font-weight:700;">nour_h</td><td class="mono fl">nour@habib.io</td><td class="mono fl">Nov 24</td><td>7</td><td class="mono">$193.44</td><td><span class="badge b-red">Banned</span></td><td><button class="tbl-btn up">Unban</button><button class="tbl-btn red">Remove</button></td></tr>
-          <tr><td style="font-weight:700;">karim99</td><td class="mono fl">k.haddad@mail.com</td><td class="mono fl">Aug 24</td><td>18</td><td class="mono">$489.60</td><td><span class="badge b-green">Active</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Ban</button></td></tr>
-          <tr><td style="font-weight:700;">ghost_1337</td><td class="mono fl">anon@proton.me</td><td class="mono fl">Dec 24</td><td>0</td><td class="mono">$0.00</td><td><span class="badge b-gray">Unverified</span></td><td><button class="tbl-btn">View</button><button class="tbl-btn red">Remove</button></td></tr>
+        <thead><tr><th>Username</th><th>Email</th><th>Joined</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="users-body">
+          <tr><td colspan="6" style="color:var(--muted); font-family:var(--mono); font-size:.72rem;">Loading...</td></tr>
         </tbody>
       </table>
-      <p style="font-family:var(--mono); font-size:.62rem; color:var(--muted); margin-top:1rem;">Showing 6 of 312</p>
+      <p id="users-note" style="font-family:var(--mono); font-size:.62rem; color:var(--muted); margin-top:1rem;"></p>
     </div>
 
     <!-- ORDERS -->
     <div class="panel" id="p-orders">
       <h2 style="font-size:1.2rem; margin-bottom:.2rem;">Orders</h2>
-      <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.6rem;">All transactions. Click Details to expand — not wired up yet.</p>
+      <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.6rem;">All transactions.</p>
 
-      <!-- TODO: hook up filtering -->
-      <div style="display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:1.5rem;">
-        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; background:var(--green); color:#000; cursor:pointer;">All</span>
-        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Processing</span>
-        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Shipped</span>
-        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Delivered</span>
-        <span style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Returned</span>
+      <div style="display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:1.5rem;" id="order-filter-bar">
+        <span class="order-filter" data-status="all" style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; background:var(--green); color:#000; cursor:pointer;">All</span>
+        <span class="order-filter" data-status="processing" style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Processing</span>
+        <span class="order-filter" data-status="shipped" style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Shipped</span>
+        <span class="order-filter" data-status="delivered" style="font-family:var(--mono); font-size:.63rem; padding:4px 11px; border:1px solid var(--line); color:var(--muted); cursor:pointer;">Delivered</span>
       </div>
 
       <table class="tbl">
-        <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Products</th><th>Subtotal</th><th>Ship</th><th>Total</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-          <tr><td class="mono">#10034</td><td>Omar Khalil</td><td class="mono fl">Apr 16</td><td style="font-size:.73rem; color:var(--muted);">ESP32 ×2, USB-C ×1</td><td class="mono">$45.97</td><td class="mono fl">$2.00</td><td class="mono">$47.97</td><td><span class="badge b-yellow">Shipped</span></td><td><button class="tbl-btn">Details</button></td></tr>
-          <tr><td class="mono">#10033</td><td>Lara Azar</td><td class="mono fl">Apr 16</td><td style="font-size:.73rem; color:var(--muted);">ESP32-S3 ×1</td><td class="mono">$6.99</td><td class="mono fl">$2.00</td><td class="mono">$8.99</td><td><span class="badge b-gray">Processing</span></td><td><button class="tbl-btn">Details</button></td></tr>
-          <tr><td class="mono">#10032</td><td>Rami Saad</td><td class="mono fl">Apr 15</td><td style="font-size:.73rem; color:var(--muted);">Pi 4 ×1, DHT22 ×2, OLED ×2</td><td class="mono">$72.93</td><td class="mono fl">$4.50</td><td class="mono">$77.43</td><td><span class="badge b-green">Delivered</span></td><td><button class="tbl-btn">Details</button></td></tr>
-          <tr><td class="mono">#10031</td><td>Nour Habib</td><td class="mono fl">Apr 15</td><td style="font-size:.73rem; color:var(--muted);">Uno ×1, Mega ×1</td><td class="mono">$27.48</td><td class="mono fl">$2.00</td><td class="mono">$29.48</td><td><span class="badge b-red">Return req.</span></td><td><button class="tbl-btn">Details</button></td></tr>
-          <tr><td class="mono">#10030</td><td>Karim Haddad</td><td class="mono fl">Apr 14</td><td style="font-size:.73rem; color:var(--muted);">nRF52840 ×1, BMP280 ×3</td><td class="mono">$20.45</td><td class="mono fl">$2.00</td><td class="mono">$22.45</td><td><span class="badge b-green">Delivered</span></td><td><button class="tbl-btn">Details</button></td></tr>
-          <tr><td class="mono">#10029</td><td>Maria T.</td><td class="mono fl">Apr 14</td><td style="font-size:.73rem; color:var(--muted);">Pi Zero 2W ×2, OLED ×3</td><td class="mono">$47.97</td><td class="mono fl">$3.00</td><td class="mono">$50.97</td><td><span class="badge b-green">Delivered</span></td><td><button class="tbl-btn">Details</button></td></tr>
+        <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Subtotal</th><th>Ship</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="orders-body">
+          <tr><td colspan="8" style="color:var(--muted); font-family:var(--mono); font-size:.72rem;">Loading...</td></tr>
         </tbody>
       </table>
-      <p style="font-family:var(--mono); font-size:.62rem; color:var(--muted); margin-top:1rem;">Showing 6 of 134</p>
+      <p id="orders-note" style="font-family:var(--mono); font-size:.62rem; color:var(--muted); margin-top:1rem;"></p>
     </div>
 
     <!-- INVENTORY -->
@@ -240,73 +198,29 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:start;">
         <div>
           <p class="slbl">Add product</p>
-          <form onsubmit="return false">
-            <div class="field"><label>Product name</label><input placeholder="e.g. ESP32-WROOM-32"></div>
+          <div id="inv-msg" style="display:none; padding:9px 13px; margin-bottom:1rem; font-family:var(--mono); font-size:.73rem;"></div>
+          <form id="add-product-form">
+            <div class="field"><label>Product name</label><input id="inv-name" placeholder="e.g. ESP32-WROOM-32"></div>
             <div class="field">
               <label>Category</label>
-              <select>
+              <select id="inv-cat">
                 <option value="">Select...</option>
-                <option>Microcontroller</option>
-                <option>WiFi / BT Module</option>
-                <option>SBC / Linux</option>
-                <option>Display</option>
-                <option>Sensor</option>
-                <option>Cable</option>
-                <option>Breadboard</option>
-                <option>Other</option>
               </select>
             </div>
-            <div class="field"><label>Description</label><textarea placeholder="Short one or two sentence description."></textarea></div>
+            <div class="field"><label>Description</label><textarea id="inv-desc" placeholder="Short one or two sentence description."></textarea></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-              <div class="field"><label>Price (USD)</label><input type="number" placeholder="0.00" step="0.01" min="0"></div>
-              <div class="field"><label>Stock qty</label><input type="number" placeholder="0" min="0"></div>
+              <div class="field"><label>Price (USD)</label><input type="number" id="inv-price" placeholder="0.00" step="0.01" min="0"></div>
+              <div class="field"><label>Stock qty</label><input type="number" id="inv-qty" placeholder="0" min="0"></div>
             </div>
-            <div class="field"><label>SKU / part number</label><input placeholder="e.g. ESP-WROOM-32D"></div>
-            <button class="btn-save">Add product</button>
+            <div class="field"><label>SKU / part number</label><input id="inv-sku" placeholder="e.g. ESP-WROOM-32D"></div>
+            <button type="submit" class="btn-save">Add product</button>
           </form>
         </div>
 
         <div>
           <p class="slbl">Stock levels</p>
-          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
-            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">Arduino Uno Rev3</span>
-            <div class="sbar-wrap"><div class="sbar" style="width:72%"></div></div>
-            <span class="mono fl" style="width:55px; text-align:right;">72 units</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
-            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">ESP32-WROOM-32</span>
-            <div class="sbar-wrap"><div class="sbar" style="width:88%"></div></div>
-            <span class="mono fl" style="width:55px; text-align:right;">88 units</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
-            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">Raspberry Pi 4 B</span>
-            <div class="sbar-wrap"><div class="sbar low" style="width:28%"></div></div>
-            <span class="mono fl" style="width:55px; text-align:right;">28 units</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
-            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">STM32F103C8T6</span>
-            <div class="sbar-wrap"><div class="sbar crit" style="width:8%"></div></div>
-            <span class="mono" style="width:55px; text-align:right; color:#ff6b6b;">8 units</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
-            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">Teensy 4.1</span>
-            <div class="sbar-wrap"><div class="sbar low" style="width:22%"></div></div>
-            <span class="mono fl" style="width:55px; text-align:right;">22 units</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
-            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">BeagleBone Black</span>
-            <div class="sbar-wrap"><div class="sbar crit" style="width:5%"></div></div>
-            <span class="mono" style="width:55px; text-align:right; color:#ff6b6b;">5 units</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
-            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">DHT22</span>
-            <div class="sbar-wrap"><div class="sbar" style="width:66%"></div></div>
-            <span class="mono fl" style="width:55px; text-align:right;">66 units</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0;">
-            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0;">MPU-6050 IMU</span>
-            <div class="sbar-wrap"><div class="sbar" style="width:79%"></div></div>
-            <span class="mono fl" style="width:55px; text-align:right;">79 units</span>
+          <div id="stock-list">
+            <p style="font-family:var(--mono); font-size:.72rem; color:var(--muted);">Loading...</p>
           </div>
           <p style="font-family:var(--mono); font-size:.58rem; color:var(--muted); margin-top:1rem; line-height:1.8;">
             <span style="color:#ff6b6b;">■</span> Critical (&lt;10) &nbsp;
@@ -320,31 +234,27 @@
     <!-- RETURNS -->
     <div class="panel" id="p-returns">
       <h2 style="font-size:1.2rem; margin-bottom:.2rem;">Returns &amp; Refunds</h2>
-      <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.6rem;">Approve sends a refund email. Reject closes the ticket.</p>
+      <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.6rem;">Approve sends a refund. Reject closes the ticket.</p>
 
       <div style="display:flex; gap:1rem; margin-bottom:2rem;">
         <div style="background:var(--bg2); border:1px solid var(--line); padding:13px 16px; min-width:110px;">
           <div style="font-family:var(--mono); font-size:.56rem; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem;">Open</div>
-          <div style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">4</div>
+          <div id="ret-open" style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">—</div>
         </div>
         <div style="background:var(--bg2); border:1px solid var(--line); padding:13px 16px; min-width:110px;">
           <div style="font-family:var(--mono); font-size:.56rem; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem;">Approved MTD</div>
-          <div style="font-family:var(--mono); font-size:1.4rem; font-weight:700; color:var(--green);">3</div>
+          <div id="ret-approved" style="font-family:var(--mono); font-size:1.4rem; font-weight:700; color:var(--green);">—</div>
         </div>
         <div style="background:var(--bg2); border:1px solid var(--line); padding:13px 16px; min-width:110px;">
           <div style="font-family:var(--mono); font-size:.56rem; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem;">Refunded MTD</div>
-          <div style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">$113.92</div>
+          <div id="ret-refunded" style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">—</div>
         </div>
       </div>
 
       <table class="tbl">
-        <thead><tr><th>ID</th><th>Order</th><th>Customer</th><th>Product</th><th>Reason</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          <tr><td class="mono">R-0021</td><td class="mono">#10031</td><td>Nour Habib</td><td style="font-size:.73rem; color:var(--muted);">Arduino Mega</td><td style="font-size:.73rem; color:var(--muted);">DOA — no UART response</td><td class="mono fl">Apr 15</td><td class="mono">$34.99</td><td><span class="badge b-yellow">Open</span></td><td><button class="tbl-btn up">Approve</button><button class="tbl-btn red">Reject</button></td></tr>
-          <tr><td class="mono">R-0020</td><td class="mono">#10019</td><td>Ali Saleh</td><td style="font-size:.73rem; color:var(--muted);">2.4" TFT</td><td style="font-size:.73rem; color:var(--muted);">Wrong item received</td><td class="mono fl">Apr 13</td><td class="mono">$8.99</td><td><span class="badge b-yellow">Open</span></td><td><button class="tbl-btn up">Approve</button><button class="tbl-btn red">Reject</button></td></tr>
-          <tr><td class="mono">R-0019</td><td class="mono">#10014</td><td>Dana Frem</td><td style="font-size:.73rem; color:var(--muted);">ESP32-C3 ×2</td><td style="font-size:.73rem; color:var(--muted);">Changed mind, unopened</td><td class="mono fl">Apr 10</td><td class="mono">$10.98</td><td><span class="badge b-yellow">Open</span></td><td><button class="tbl-btn up">Approve</button><button class="tbl-btn red">Reject</button></td></tr>
-          <tr><td class="mono">R-0018</td><td class="mono">#10009</td><td>Fadi Khoury</td><td style="font-size:.73rem; color:var(--muted);">BeagleBone Black</td><td style="font-size:.73rem; color:var(--muted);">Damaged in shipping</td><td class="mono fl">Apr 08</td><td class="mono">$55.00</td><td><span class="badge b-yellow">Open</span></td><td><button class="tbl-btn up">Approve</button><button class="tbl-btn red">Reject</button></td></tr>
-          <tr><td class="mono">R-0017</td><td class="mono">#10001</td><td>Rami Saad</td><td style="font-size:.73rem; color:var(--muted);">Raspberry Pi 3 B</td><td style="font-size:.73rem; color:var(--muted);">Not as described</td><td class="mono fl">Mar 30</td><td class="mono">$39.99</td><td><span class="badge b-green">Approved</span></td><td><button class="tbl-btn">Details</button></td></tr>
+        <thead><tr><th>Return #</th><th>Order</th><th>Customer</th><th>Reason</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="returns-body">
+          <tr><td colspan="8" style="color:var(--muted); font-family:var(--mono); font-size:.72rem;">Loading...</td></tr>
         </tbody>
       </table>
     </div>
@@ -352,6 +262,9 @@
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
 <script>
   const btn = document.getElementById('theme-btn');
   btn.addEventListener('click', () => {
@@ -361,6 +274,330 @@
     btn.textContent = isLight ? '☀️' : '🌙';
   });
   if (!document.documentElement.classList.contains('light')) btn.textContent = '☀️';
+
+  function fmt(n) { return '$' + Number(n).toFixed(2); }
+
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  }
+
+  function statusBadge(status) {
+    const map = {
+      processing: 'b-gray', shipped: 'b-yellow',
+      delivered: 'b-green', returned: 'b-red', open: 'b-yellow',
+      approved: 'b-green', rejected: 'b-red'
+    };
+    return `<span class="badge ${map[status] || 'b-gray'}">${status}</span>`;
+  }
+
+  async function loadOverview() {
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+
+    const [
+      { data: orders },
+      { data: users },
+      { count: openReturns }
+    ] = await Promise.all([
+      db.from('orders').select('total, status, order_date'),
+      db.from('users').select('id, status'),
+      db.from('returns').select('*', { count: 'exact', head: true }).eq('status', 'open')
+    ]);
+
+    const monthOrders = (orders || []).filter(o => o.order_date >= monthStart);
+    const revenue     = monthOrders.reduce((s, o) => s + parseFloat(o.total), 0);
+
+    document.getElementById('stat-revenue').textContent  = fmt(revenue);
+    document.getElementById('stat-orders').textContent   = monthOrders.length;
+    document.getElementById('stat-users').textContent    = (users || []).filter(u => u.status !== 'banned').length;
+    document.getElementById('stat-returns').textContent  = openReturns || 0;
+
+    // recent orders — fetch with customer info separately
+    const recent = (orders || [])
+      .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
+      .slice(0, 5);
+
+    // get all orders with full details
+    const { data: recentFull } = await db
+      .from('orders')
+      .select('*, users!customer_id(username, first_name, last_name)')
+      .order('order_date', { ascending: false })
+      .limit(5);
+
+    const body = document.getElementById('recent-orders-body');
+    if (!recentFull || !recentFull.length) {
+      body.innerHTML = '<tr><td colspan="5" style="color:var(--muted); font-family:var(--mono); font-size:.72rem;">No orders yet.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = recentFull.map(o => {
+      const u = o.users;
+      const name = u ? (u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username) : '—';
+      return `
+        <tr>
+          <td class="mono">${o.order_number}</td>
+          <td>${name}</td>
+          <td class="mono fl">${fmtDate(o.order_date)}</td>
+          <td class="mono">${fmt(o.total)}</td>
+          <td>${statusBadge(o.status)}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  async function loadUsers() {
+    const { data: users, error } = await db
+      .from('users')
+      .select('*')
+      .order('joined_at', { ascending: false });
+
+    const body = document.getElementById('users-body');
+    const note = document.getElementById('users-note');
+
+    if (error || !users || !users.length) {
+      body.innerHTML = '<tr><td colspan="6" style="color:var(--muted); font-family:var(--mono); font-size:.72rem;">No users yet.</td></tr>';
+      return;
+    }
+
+    note.textContent = `Showing ${users.length} user${users.length !== 1 ? 's' : ''}`;
+
+    function renderRow(u) {
+      const isBanned = u.status === 'banned';
+      const badge    = isBanned ? '<span class="badge b-red">Banned</span>'
+        : u.status === 'unverified' ? '<span class="badge b-gray">Unverified</span>'
+        : '<span class="badge b-green">Active</span>';
+      const actions  = isBanned
+        ? `<button class="tbl-btn grn" data-action="unban" data-id="${u.id}">Unban</button>`
+        : `<button class="tbl-btn red" data-action="ban" data-id="${u.id}">Ban</button>`;
+      return `
+        <tr data-id="${u.id}">
+          <td style="font-weight:700;">${u.username}</td>
+          <td class="mono fl">${u.email}</td>
+          <td class="mono fl">${fmtDate(u.joined_at)}</td>
+          <td class="mono fl">${u.role}</td>
+          <td>${badge}</td>
+          <td>${actions}</td>
+        </tr>`;
+    }
+
+    body.innerHTML = users.map(renderRow).join('');
+
+    // ban / unban
+    body.addEventListener('click', async e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const id     = parseInt(btn.dataset.id);
+      const action = btn.dataset.action;
+      const { error } = await db.from('users').update({ status: action === 'ban' ? 'banned' : 'active' }).eq('id', id);
+      if (!error) loadUsers();
+    });
+
+    // search
+    document.getElementById('user-search').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      body.querySelectorAll('tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = (!q || text.includes(q)) ? '' : 'none';
+      });
+    });
+  }
+
+  async function loadOrders() {
+    const { data: orders } = await db
+      .from('orders')
+      .select('*, users!customer_id(username, first_name, last_name)')
+      .order('order_date', { ascending: false })
+      .limit(100);
+
+    const body = document.getElementById('orders-body');
+    const note = document.getElementById('orders-note');
+
+    if (!orders || !orders.length) {
+      body.innerHTML = '<tr><td colspan="8" style="color:var(--muted); font-family:var(--mono); font-size:.72rem;">No orders yet.</td></tr>';
+      return;
+    }
+
+    note.textContent = `Showing ${orders.length} order${orders.length !== 1 ? 's' : ''}`;
+
+    body.innerHTML = orders.map(o => {
+      const u    = o.users;
+      const name = u ? (u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username) : '—';
+      return `
+        <tr data-status="${o.status}">
+          <td class="mono">${o.order_number}</td>
+          <td>${name}</td>
+          <td class="mono fl">${fmtDate(o.order_date)}</td>
+          <td class="mono">${fmt(o.subtotal)}</td>
+          <td class="mono fl">${fmt(o.shipping_cost)}</td>
+          <td class="mono">${fmt(o.total)}</td>
+          <td>${statusBadge(o.status)}</td>
+          <td>
+            <select data-order-id="${o.id}" style="background:var(--bg2); border:1px solid var(--line); color:var(--text); font-family:var(--mono); font-size:.62rem; padding:3px 6px; cursor:pointer;">
+              <option value="processing" ${o.status==='processing'?'selected':''}>Processing</option>
+              <option value="shipped"    ${o.status==='shipped'   ?'selected':''}>Shipped</option>
+              <option value="delivered"  ${o.status==='delivered' ?'selected':''}>Delivered</option>
+              <option value="returned"   ${o.status==='returned'  ?'selected':''}>Returned</option>
+            </select>
+          </td>
+        </tr>`;
+    }).join('');
+
+    // status change dropdowns
+    body.querySelectorAll('select[data-order-id]').forEach(sel => {
+      sel.addEventListener('change', async () => {
+        await db.from('orders').update({ status: sel.value }).eq('id', parseInt(sel.dataset.orderId));
+      });
+    });
+
+    // filter tabs
+    document.getElementById('order-filter-bar').addEventListener('click', e => {
+      const span = e.target.closest('[data-status]');
+      if (!span) return;
+      document.querySelectorAll('.order-filter').forEach(s => {
+        s.style.background = 'transparent';
+        s.style.color      = 'var(--muted)';
+        s.style.border     = '1px solid var(--line)';
+      });
+      span.style.background = 'var(--green)';
+      span.style.color      = '#000';
+      span.style.border     = '1px solid var(--green)';
+      const status = span.dataset.status;
+      body.querySelectorAll('tr').forEach(row => {
+        row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
+      });
+    });
+  }
+
+  async function loadInventory() {
+    const { data: categories } = await db.from('categories').select('*').order('name');
+    const { data: products }   = await db.from('products').select('*').order('stock_quantity');
+
+    // populate category dropdown
+    const catSel = document.getElementById('inv-cat');
+    (categories || []).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      catSel.appendChild(opt);
+    });
+
+    // stock list
+    const list = document.getElementById('stock-list');
+    if (!products || !products.length) {
+      list.innerHTML = '<p style="font-family:var(--mono); font-size:.72rem; color:var(--muted);">No products yet.</p>';
+    } else {
+      const maxQty = Math.max(...products.map(p => p.stock_quantity), 100);
+      list.innerHTML = products.slice(0, 10).map(p => {
+        const pct = Math.round(p.stock_quantity / maxQty * 100);
+        const cls = p.stock_quantity < 10 ? 'crit' : p.stock_quantity < 30 ? 'low' : '';
+        const col = p.stock_quantity < 10 ? 'color:#ff6b6b;' : '';
+        return `
+          <div style="display:flex; align-items:center; gap:.8rem; padding:9px 0; border-bottom:1px solid var(--line);">
+            <span style="font-size:.8rem; font-weight:600; width:160px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</span>
+            <div class="sbar-wrap"><div class="sbar ${cls}" style="width:${pct}%"></div></div>
+            <span class="mono fl" style="width:55px; text-align:right; ${col}">${p.stock_quantity} units</span>
+          </div>`;
+      }).join('');
+    }
+
+    // add product form
+    document.getElementById('add-product-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const name  = document.getElementById('inv-name').value.trim();
+      const catId = document.getElementById('inv-cat').value;
+      const desc  = document.getElementById('inv-desc').value.trim();
+      const price = parseFloat(document.getElementById('inv-price').value);
+      const qty   = parseInt(document.getElementById('inv-qty').value);
+      const sku   = document.getElementById('inv-sku').value.trim();
+
+      if (!name || !catId || !sku || isNaN(price)) {
+        showInvMsg('Fill in all required fields.', true); return;
+      }
+
+      const { error } = await db.from('products').insert({
+        name, category_id: parseInt(catId), description: desc, price, sku,
+        stock_quantity: qty || 0,
+        stock_status: qty > 0 ? 'in_stock' : 'out_of_stock'
+      });
+
+      if (error) { showInvMsg(error.message, true); return; }
+      showInvMsg(`"${name}" added successfully.`, false);
+      document.getElementById('add-product-form').reset();
+      loadInventory();
+    });
+  }
+
+  function showInvMsg(text, isErr) {
+    const el = document.getElementById('inv-msg');
+    el.textContent = text; el.style.display = 'block';
+    el.style.background = isErr ? 'rgba(255,68,68,.12)' : 'rgba(0,255,136,.10)';
+    el.style.color      = isErr ? '#ff4444' : 'var(--green)';
+    el.style.border     = isErr ? '1px solid rgba(255,68,68,.3)' : '1px solid rgba(0,255,136,.3)';
+  }
+
+  async function loadReturns() {
+    const { data: returns } = await db
+      .from('returns')
+      .select('*, orders!order_id(order_number), users!customer_id(username, first_name, last_name)')
+      .order('request_date', { ascending: false });
+
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+    const open     = (returns || []).filter(r => r.status === 'open').length;
+    const approved = (returns || []).filter(r => r.status === 'approved' && r.request_date >= monthStart).length;
+    const refunded = (returns || [])
+      .filter(r => r.status === 'approved' && r.request_date >= monthStart)
+      .reduce((s, r) => s + parseFloat(r.refund_amount), 0);
+
+    document.getElementById('ret-open').textContent     = open;
+    document.getElementById('ret-approved').textContent = approved;
+    document.getElementById('ret-refunded').textContent = '$' + refunded.toFixed(2);
+
+    const body = document.getElementById('returns-body');
+    if (!returns || !returns.length) {
+      body.innerHTML = '<tr><td colspan="8" style="color:var(--muted); font-family:var(--mono); font-size:.72rem;">No returns yet.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = returns.map(r => {
+      const u    = r.users;
+      const name = u ? (u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username) : '—';
+      const orderNum = r.orders?.order_number || '—';
+      const actions  = r.status === 'open'
+        ? `<button class="tbl-btn grn" data-action="approved" data-id="${r.id}">Approve</button>
+           <button class="tbl-btn red" data-action="rejected" data-id="${r.id}">Reject</button>`
+        : `<span style="font-family:var(--mono); font-size:.6rem; color:var(--muted);">${r.status}</span>`;
+      return `
+        <tr>
+          <td class="mono">${r.return_number}</td>
+          <td class="mono">${orderNum}</td>
+          <td>${name}</td>
+          <td style="font-size:.73rem; color:var(--muted);">${r.reason}</td>
+          <td class="mono fl">${fmtDate(r.request_date)}</td>
+          <td class="mono">${fmt(r.refund_amount)}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td>${actions}</td>
+        </tr>`;
+    }).join('');
+
+    body.addEventListener('click', async e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      await db.from('returns').update({ status: btn.dataset.action }).eq('id', parseInt(btn.dataset.id));
+      loadReturns();
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await auth.init();
+
+    if (!auth.user) { window.location.href = 'login.html'; return; }
+
+    // wait a tick for profile to load, then check role
+    await new Promise(r => setTimeout(r, 100));
+    if (auth.profile?.role !== 'admin') { window.location.href = 'index.html'; return; }
+
+    document.getElementById('admin-email').textContent = auth.user.email;
+
+    // load all tabs in parallel
+    await Promise.all([loadOverview(), loadUsers(), loadOrders(), loadInventory(), loadReturns()]);
+  });
 </script>
 </body>
 </html>

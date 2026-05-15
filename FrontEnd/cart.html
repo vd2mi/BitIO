@@ -16,7 +16,7 @@
     <li><a href="market.html">Market</a></li>
     <li><a href="index.html#about">About</a></li>
     <li><a href="login.html" class="nav-auth">Sign In</a></li>
-    <li><span class="nav-cart">Cart</span></li>
+    <li><span class="nav-cart">Cart (<span id="cart-n">0</span>)</span></li>
     <li><button id="theme-btn" title="Toggle theme">🌙</button></li>
     <li><a href="settings.html" class="nav-user" title="Settings">&#9888;</a></li>
   </ul>
@@ -26,50 +26,29 @@
   <div class="cart-layout">
 
     <div class="cart-col cart-col--items">
-      <h1 class="cart-heading">Cart <span>2 items</span></h1>
-      <div class="cart-list">
-
-        <div class="cart-item">
-          <div class="cart-item-info">
-            <div class="cart-item-cat">Microcontroller</div>
-            <div class="cart-item-name">Arduino Uno Rev3</div>
-            <div class="cart-item-unit">$24.99 each</div>
-          </div>
-          <div class="cart-item-controls">
-            <span class="qty-val">1</span>
-          </div>
-          <div class="cart-item-price">$24.99</div>
-        </div>
-
-        <div class="cart-item">
-          <div class="cart-item-info">
-            <div class="cart-item-cat">WiFi / BT Module</div>
-            <div class="cart-item-name">ESP32-WROOM-32</div>
-            <div class="cart-item-unit">$8.99 each</div>
-          </div>
-          <div class="cart-item-controls">
-            <span class="qty-val">2</span>
-          </div>
-          <div class="cart-item-price">$17.98</div>
-        </div>
-
+      <h1 class="cart-heading">Cart <span id="cart-item-count"></span></h1>
+      <div class="cart-list" id="cart-list">
+        <!-- filled by JS -->
       </div>
-      <p class="cart-static-note">Checkout coming soon — this page is a preview.</p>
+      <div id="cart-empty" style="display:none; padding:3rem 0; text-align:center; font-family:var(--mono); font-size:.8rem; color:var(--muted);">
+        Your cart is empty. <a href="index.html#products" style="color:var(--green);">Browse products →</a>
+      </div>
     </div>
 
     <div class="cart-col cart-col--summary">
       <div class="cart-summary">
         <h2 class="cart-summary-heading">Order Summary</h2>
         <div class="cart-totals">
-          <div class="cart-total-row"><span>Subtotal</span><span>$42.97</span></div>
-          <div class="cart-total-row"><span>Shipping</span><span>Free</span></div>
-          <div class="cart-total-row cart-total-row--total"><span>Total</span><span>$42.97</span></div>
+          <div class="cart-total-row"><span>Subtotal</span><span id="summary-sub">$0.00</span></div>
+          <div class="cart-total-row"><span>Shipping</span><span id="summary-ship">—</span></div>
+          <div class="cart-total-row cart-total-row--total"><span>Total</span><span id="summary-total">$0.00</span></div>
         </div>
       </div>
 
-      <div class="cart-payment">
+      <div class="cart-payment" id="payment-section">
         <h2 class="cart-payment-heading">Payment</h2>
-        <form class="payment-form" action="#">
+        <div id="payment-msg" style="display:none; padding:9px 13px; margin-bottom:1rem; font-family:var(--mono); font-size:.73rem;"></div>
+        <form class="payment-form" id="payment-form" action="#">
           <div class="auth-field">
             <label for="card-name">Name on Card</label>
             <input type="text" id="card-name" placeholder="Ada Lovelace" autocomplete="cc-name">
@@ -88,20 +67,201 @@
               <input type="text" id="card-cvv" placeholder="123" maxlength="4" autocomplete="cc-csc" inputmode="numeric">
             </div>
           </div>
-          <button type="submit" class="btn-submit">Place Order — $42.97</button>
+          <button type="submit" class="btn-submit" id="btn-checkout">Place Order — $0.00</button>
         </form>
+        <p style="font-family:var(--mono); font-size:.58rem; color:var(--muted); margin-top:.8rem; opacity:.7;">
+          Demo mode — no real payment is processed.
+        </p>
+      </div>
+
+      <div id="order-success" style="display:none; padding:2rem; text-align:center; border:1px solid rgba(0,255,136,.25);">
+        <div style="font-family:var(--mono); font-size:1.4rem; color:var(--green); margin-bottom:.6rem;">✓</div>
+        <div style="font-weight:700; margin-bottom:.4rem;">Order placed!</div>
+        <div id="order-number" style="font-family:var(--mono); font-size:.75rem; color:var(--muted); margin-bottom:1.2rem;"></div>
+        <a href="index.html#products" style="font-family:var(--mono); font-size:.73rem; color:var(--green);">Continue shopping →</a>
       </div>
     </div>
 
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/cart.js"></script>
 <script>
-  // just the theme toggle
   document.getElementById('theme-btn').addEventListener('click', () => {
     const light = document.documentElement.classList.toggle('light');
     localStorage.setItem('bitio-theme', light ? 'light' : 'dark');
     document.getElementById('theme-btn').textContent = light ? '🌙' : '☀';
+  });
+
+  const SHIPPING_RATE = 2.00; // flat $2 shipping, free over $35
+
+  function formatMoney(n) {
+    return '$' + Number(n).toFixed(2);
+  }
+
+  function renderCart() {
+    const items    = cart.get();
+    const list     = document.getElementById('cart-list');
+    const empty    = document.getElementById('cart-empty');
+    const countEl  = document.getElementById('cart-item-count');
+    const subEl    = document.getElementById('summary-sub');
+    const shipEl   = document.getElementById('summary-ship');
+    const totalEl  = document.getElementById('summary-total');
+    const checkBtn = document.getElementById('btn-checkout');
+
+    cart.updateNavCount();
+
+    if (items.length === 0) {
+      list.innerHTML   = '';
+      empty.style.display  = '';
+      countEl.textContent  = '';
+      subEl.textContent    = '$0.00';
+      shipEl.textContent   = '—';
+      totalEl.textContent  = '$0.00';
+      checkBtn.textContent = 'Place Order — $0.00';
+      return;
+    }
+
+    empty.style.display = 'none';
+    countEl.textContent = items.length === 1 ? '1 item' : `${items.length} items`;
+
+    list.innerHTML = items.map(item => `
+      <div class="cart-item" data-id="${item.id}">
+        <div class="cart-item-info">
+          <div class="cart-item-cat">${item.category}</div>
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-unit">${formatMoney(item.price)} each</div>
+        </div>
+        <div class="cart-item-controls">
+          <button class="qty-btn" data-action="dec" data-id="${item.id}" style="background:none;border:1px solid var(--line);color:var(--muted);padding:2px 8px;cursor:pointer;">−</button>
+          <span class="qty-val">${item.qty}</span>
+          <button class="qty-btn" data-action="inc" data-id="${item.id}" style="background:none;border:1px solid var(--line);color:var(--muted);padding:2px 8px;cursor:pointer;">+</button>
+        </div>
+        <div class="cart-item-price">${formatMoney(item.price * item.qty)}</div>
+        <button class="remove-btn" data-id="${item.id}" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:0 4px;" title="Remove">✕</button>
+      </div>
+    `).join('');
+
+    // qty +/- buttons
+    list.querySelectorAll('.qty-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id  = parseInt(btn.dataset.id);
+        const inc = btn.dataset.action === 'inc';
+        const item = cart.get().find(i => i.id === id);
+        if (item) cart.setQty(id, item.qty + (inc ? 1 : -1));
+        renderCart();
+      });
+    });
+
+    // remove buttons
+    list.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        cart.remove(parseInt(btn.dataset.id));
+        renderCart();
+      });
+    });
+
+    const sub      = cart.subtotal();
+    const shipping = sub >= 35 ? 0 : SHIPPING_RATE;
+    const total    = sub + shipping;
+
+    subEl.textContent    = formatMoney(sub);
+    shipEl.textContent   = shipping === 0 ? 'Free' : formatMoney(shipping);
+    totalEl.textContent  = formatMoney(total);
+    checkBtn.textContent = `Place Order — ${formatMoney(total)}`;
+  }
+
+  function showPaymentMsg(text, isErr) {
+    const el = document.getElementById('payment-msg');
+    el.textContent  = text;
+    el.style.display = 'block';
+    el.style.background = isErr ? 'rgba(255,68,68,.12)' : 'rgba(0,255,136,.10)';
+    el.style.color      = isErr ? '#ff4444' : 'var(--green)';
+    el.style.border     = isErr ? '1px solid rgba(255,68,68,.3)' : '1px solid rgba(0,255,136,.3)';
+  }
+
+  document.getElementById('payment-form').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const items = cart.get();
+    if (items.length === 0) return;
+
+    if (!auth.user) {
+      showPaymentMsg('You need to be signed in to place an order.', true);
+      setTimeout(() => window.location.href = 'login.html', 1500);
+      return;
+    }
+
+    const cardName = document.getElementById('card-name').value.trim();
+    const cardNum  = document.getElementById('card-num').value.trim();
+    const cardExp  = document.getElementById('card-exp').value.trim();
+    const cardCvv  = document.getElementById('card-cvv').value.trim();
+
+    if (!cardName || !cardNum || !cardExp || !cardCvv) {
+      showPaymentMsg('Please fill in all payment fields.', true);
+      return;
+    }
+
+    const btn = document.getElementById('btn-checkout');
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+    btn.textContent = 'Placing order...';
+
+    const sub      = cart.subtotal();
+    const shipping = sub >= 35 ? 0 : SHIPPING_RATE;
+    const total    = sub + shipping;
+    const orderNum = 'BT-' + Date.now();
+
+    // insert order
+    const { data: order, error: orderErr } = await db
+      .from('orders')
+      .insert({
+        order_number:  orderNum,
+        customer_id:   auth.profile.id,
+        subtotal:      sub.toFixed(2),
+        shipping_cost: shipping.toFixed(2),
+        total:         total.toFixed(2),
+        status:        'processing'
+      })
+      .select()
+      .single();
+
+    if (orderErr) {
+      showPaymentMsg('Could not place order: ' + orderErr.message, true);
+      btn.disabled = false; btn.style.opacity = '1';
+      renderCart();
+      return;
+    }
+
+    // insert order items
+    const lineItems = items.map(i => ({
+      order_id:   order.id,
+      product_id: i.id,
+      quantity:   i.qty,
+      unit_price: i.price.toFixed(2)
+    }));
+
+    const { error: itemsErr } = await db.from('order_items').insert(lineItems);
+
+    if (itemsErr) {
+      // order is placed but items failed — edge case, just show the order
+      console.warn('order items insert failed:', itemsErr);
+    }
+
+    // success
+    cart.clear();
+    document.getElementById('payment-section').style.display = 'none';
+    document.getElementById('order-success').style.display   = '';
+    document.getElementById('order-number').textContent       = `Order ${orderNum}`;
+    renderCart();
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await auth.init();
+    renderCart();
   });
 </script>
 

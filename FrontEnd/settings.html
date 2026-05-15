@@ -18,7 +18,7 @@
       align-items: start;
     }
 
-    .s-nav { position: sticky; top: 72px; } /* stays put while the content scrolls */
+    .s-nav { position: sticky; top: 72px; }
 
     .t-radio { display: none; }
 
@@ -31,7 +31,6 @@
     }
     .s-nav label:hover { color: var(--text); }
 
-    /* same approach as login.html tabs */
     #t-profile:checked  ~ .s-wrap label[for="t-profile"],
     #t-security:checked ~ .s-wrap label[for="t-security"],
     #t-notifs:checked   ~ .s-wrap label[for="t-notifs"],
@@ -71,7 +70,6 @@
     }
     .btn-ghost:hover { border-color: var(--green); color: var(--green); }
 
-    /* checkbox hidden and restyled to look like a toggle */
     .toggle input { display: none; }
     .tog-track {
       display: block; width: 36px; height: 20px;
@@ -93,6 +91,8 @@
       text-transform: uppercase; border: 1px solid rgba(255,60,60,.4); cursor: pointer;
     }
     .btn-del:hover { background: rgba(255,60,60,.08); }
+
+    .form-msg { display:none; padding:9px 13px; margin-bottom:1rem; font-family:var(--mono); font-size:.73rem; max-width:460px; }
   </style>
 </head>
 <body>
@@ -104,13 +104,12 @@
     <li><a href="market.html">Market</a></li>
     <li><a href="index.html#about">About</a></li>
     <li><a href="login.html" class="nav-auth">Sign In</a></li>
-    <li><a class="nav-cart" href="cart.html">Cart (<span>0</span>)</a></li>
+    <li><a class="nav-cart" href="cart.html">Cart (<span id="cart-n">0</span>)</a></li>
     <li><button id="theme-btn" title="Toggle theme">🌙</button></li>
     <li><a href="settings.html" class="nav-user" title="Settings">&#9888;</a></li>
   </ul>
 </nav>
 
-<!-- has to be before .s-wrap or the tab switching breaks -->
 <input class="t-radio" type="radio" id="t-profile"  name="stab" checked>
 <input class="t-radio" type="radio" id="t-security" name="stab">
 <input class="t-radio" type="radio" id="t-notifs"   name="stab">
@@ -119,7 +118,6 @@
 
 <div class="s-wrap">
 
-  <!-- sidebar -->
   <aside class="s-nav">
     <p style="font-family:var(--mono); font-size:.55rem; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); margin-bottom:.7rem;">Account</p>
     <ul>
@@ -129,6 +127,9 @@
       <li><label for="t-addr">Addresses</label></li>
       <li><label for="t-danger">Danger Zone</label></li>
     </ul>
+    <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--line);">
+      <button onclick="auth.signOut()" style="background:none; border:none; font-family:var(--mono); font-size:.68rem; color:var(--muted); cursor:pointer; padding:0;">Sign out →</button>
+    </div>
   </aside>
 
   <main>
@@ -136,34 +137,34 @@
     <!-- PROFILE -->
     <section class="panel" id="p-profile">
       <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Profile</h2>
-      <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Your public info.</p>
+      <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Your account info.</p>
 
-      <!-- no image upload for now, just initials -->
       <div style="display:flex; align-items:center; gap:1.2rem; padding-bottom:1.6rem; border-bottom:1px solid var(--line); margin-bottom:1.6rem;">
-        <div style="width:60px; height:60px; background:var(--bg2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:1.3rem; font-weight:700; color:var(--green);">JD</div>
+        <div id="avatar" style="width:60px; height:60px; background:var(--bg2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:1.3rem; font-weight:700; color:var(--green);">—</div>
         <div>
-          <div style="font-weight:700;">john_dev</div>
-          <div style="font-family:var(--mono); font-size:.68rem; color:var(--muted);">john@example.com</div>
+          <div id="profile-username" style="font-weight:700;">—</div>
+          <div id="profile-email" style="font-family:var(--mono); font-size:.68rem; color:var(--muted);">—</div>
         </div>
       </div>
 
-      <form onsubmit="return false">
+      <div class="form-msg" id="profile-msg"></div>
+      <form id="form-profile">
         <div class="two-col">
-          <div class="field"><label>First name</label><input value="John"></div>
-          <div class="field"><label>Last name</label><input value="Doe"></div>
+          <div class="field"><label>First name</label><input id="p-fname" placeholder="First name"></div>
+          <div class="field"><label>Last name</label><input id="p-lname" placeholder="Last name"></div>
         </div>
         <div class="field">
           <label>Username</label>
-          <input value="john_dev">
-          <span class="hint">visible to other users on bitio.io/~john_dev</span>
+          <input id="p-username" placeholder="username">
+          <span class="hint">letters, numbers, and underscores only</span>
         </div>
-        <div class="field"><label>Email</label><input type="email" value="john@example.com"></div>
+        <div class="field"><label>Email</label><input type="email" id="p-email" placeholder="you@example.com"></div>
         <div class="field">
           <label>Bio</label>
-          <textarea>EE student, building a small army of ESP32s.</textarea>
+          <textarea id="p-bio" maxlength="160" placeholder="Tell us a little about yourself."></textarea>
           <span class="hint">max 160 chars</span>
         </div>
-        <button class="btn-save">Save changes</button>
+        <button type="submit" class="btn-save">Save changes</button>
       </form>
     </section>
 
@@ -173,22 +174,21 @@
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Password and active sessions.</p>
 
       <p style="font-family:var(--mono); font-size:.6rem; text-transform:uppercase; color:var(--muted); margin-bottom:1rem;">Change password</p>
-      <form onsubmit="return false">
-        <div class="field"><label>Current password</label><input type="password" placeholder="••••••••"></div>
+      <div class="form-msg" id="pass-msg"></div>
+      <form id="form-password">
         <div class="field">
           <label>New password</label>
-          <input type="password" placeholder="••••••••">
-          <span class="hint">at least 8 chars, please don't use "password"</span>
+          <input type="password" id="new-pass" placeholder="••••••••">
+          <span class="hint">at least 6 characters</span>
         </div>
-        <div class="field"><label>Confirm new password</label><input type="password" placeholder="••••••••"></div>
-        <button class="btn-save">Update password</button>
+        <div class="field"><label>Confirm new password</label><input type="password" id="new-pass2" placeholder="••••••••"></div>
+        <button type="submit" class="btn-save">Update password</button>
       </form>
 
       <hr style="border:none; border-top:1px solid var(--line); margin:2rem 0;">
 
       <p style="font-family:var(--mono); font-size:.6rem; text-transform:uppercase; color:var(--muted); margin-bottom:1rem;">Active sessions</p>
-        <!-- static for now -->
-      <table style="width:100%; max-width:480px; border-collapse:collapse; font-size:.78rem;">
+      <table id="sessions-table" style="width:100%; max-width:480px; border-collapse:collapse; font-size:.78rem;">
         <thead>
           <tr style="border-bottom:1px solid var(--line);">
             <th style="text-align:left; font-family:var(--mono); font-size:.58rem; text-transform:uppercase; color:var(--muted); padding:6px 0;">Device</th>
@@ -197,25 +197,8 @@
             <th></th>
           </tr>
         </thead>
-        <tbody>
-          <tr style="border-bottom:1px solid var(--line);">
-            <td style="padding:10px 0; font-weight:700;">Chrome / Windows <span style="font-family:var(--mono); font-size:.6rem; color:var(--green); margin-left:.4rem;">current</span></td>
-            <td style="padding:10px 0; color:var(--muted);">Beirut, LB</td>
-            <td style="padding:10px 0; font-family:var(--mono); font-size:.68rem; color:var(--muted);">Now</td>
-            <td></td>
-          </tr>
-          <tr style="border-bottom:1px solid var(--line);">
-            <td style="padding:10px 0; font-weight:700;">Firefox / Linux</td>
-            <td style="padding:10px 0; color:var(--muted);">Beirut, LB</td>
-            <td style="padding:10px 0; font-family:var(--mono); font-size:.68rem; color:var(--muted);">2 days ago</td>
-            <td style="text-align:right;"><button class="btn-ghost">Revoke</button></td>
-          </tr>
-          <tr>
-            <td style="padding:10px 0; font-weight:700;">Safari / iPhone</td>
-            <td style="padding:10px 0; color:var(--muted);">Tripoli, LB</td>
-            <td style="padding:10px 0; font-family:var(--mono); font-size:.68rem; color:var(--muted);">6 days ago</td>
-            <td style="text-align:right;"><button class="btn-ghost">Revoke</button></td>
-          </tr>
+        <tbody id="sessions-body">
+          <tr><td colspan="4" style="color:var(--muted); font-family:var(--mono); font-size:.72rem; padding:10px 0;">Loading...</td></tr>
         </tbody>
       </table>
     </section>
@@ -224,55 +207,41 @@
     <section class="panel" id="p-notifs">
       <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Notifications</h2>
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">We don't spam. Turn things off if you want.</p>
+      <div class="form-msg" id="notif-msg"></div>
 
-      <!-- each row: text on left, toggle on right -->
-      <ul style="list-style:none;">
+      <ul style="list-style:none;" id="notif-list">
         <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); gap:2rem;">
-          <div>
-            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Order updates</div>
-            <div style="font-size:.75rem; color:var(--muted);">Confirmation, shipping, and delivery.</div>
-          </div>
-          <label class="toggle"><input type="checkbox" checked><span class="tog-track"></span></label>
+          <div><div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Order updates</div><div style="font-size:.75rem; color:var(--muted);">Confirmation, shipping, and delivery.</div></div>
+          <label class="toggle"><input type="checkbox" id="n-orders" checked><span class="tog-track"></span></label>
         </li>
         <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); gap:2rem;">
-          <div>
-            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Back in stock</div>
-            <div style="font-size:.75rem; color:var(--muted);">Email when a watched product is available again.</div>
-          </div>
-          <label class="toggle"><input type="checkbox" checked><span class="tog-track"></span></label>
+          <div><div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Back in stock</div><div style="font-size:.75rem; color:var(--muted);">Email when a watched product is available again.</div></div>
+          <label class="toggle"><input type="checkbox" id="n-stock" checked><span class="tog-track"></span></label>
         </li>
         <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); gap:2rem;">
-          <div>
-            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Price drops</div>
-            <div style="font-size:.75rem; color:var(--muted);">When the price on a watched item goes down.</div>
-          </div>
-          <label class="toggle"><input type="checkbox"><span class="tog-track"></span></label>
+          <div><div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Price drops</div><div style="font-size:.75rem; color:var(--muted);">When the price on a watched item goes down.</div></div>
+          <label class="toggle"><input type="checkbox" id="n-price"><span class="tog-track"></span></label>
         </li>
         <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); gap:2rem;">
-          <div>
-            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Newsletter</div>
-            <div style="font-size:.75rem; color:var(--muted);">Monthly new arrivals digest.</div>
-          </div>
-          <label class="toggle"><input type="checkbox"><span class="tog-track"></span></label>
+          <div><div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Newsletter</div><div style="font-size:.75rem; color:var(--muted);">Monthly new arrivals digest.</div></div>
+          <label class="toggle"><input type="checkbox" id="n-news"><span class="tog-track"></span></label>
         </li>
         <li style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; gap:2rem;">
-          <div>
-            <div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Security alerts</div>
-            <div style="font-size:.75rem; color:var(--muted);">New logins, password changes, etc.</div>
-          </div>
-          <label class="toggle"><input type="checkbox" checked><span class="tog-track"></span></label>
+          <div><div style="font-size:.88rem; font-weight:600; margin-bottom:.1rem;">Security alerts</div><div style="font-size:.75rem; color:var(--muted);">New logins, password changes, etc.</div></div>
+          <label class="toggle"><input type="checkbox" id="n-sec" checked><span class="tog-track"></span></label>
         </li>
       </ul>
 
       <hr style="border:none; border-top:1px solid var(--line); margin:1.8rem 0;">
-      <div class="field" style="max-width:280px; margin-bottom:0;">
+      <div class="field" style="max-width:280px; margin-bottom:1.2rem;">
         <label>Email digest</label>
-        <select>
-          <option>Send immediately</option>
-          <option selected>Daily digest</option>
-          <option>Weekly digest</option>
+        <select id="n-digest">
+          <option value="instant">Send immediately</option>
+          <option value="daily" selected>Daily digest</option>
+          <option value="weekly">Weekly digest</option>
         </select>
       </div>
+      <button class="btn-save" id="btn-save-notifs">Save preferences</button>
     </section>
 
     <!-- ADDRESSES -->
@@ -280,32 +249,26 @@
       <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Addresses</h2>
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Saved shipping addresses for faster checkout.</p>
 
-      <!-- existing saved address -->
-      <div style="border:1px solid var(--line); padding:16px 18px; max-width:460px; margin-bottom:1.6rem; position:relative;">
-        <span style="position:absolute; top:12px; right:12px; font-family:var(--mono); font-size:.58rem; color:var(--green); border:1px solid rgba(0,255,136,.25); padding:2px 7px;">default</span>
-        <div style="font-weight:700; margin-bottom:.3rem;">John Doe</div>
-        <div style="font-size:.82rem; color:var(--muted); line-height:1.7;">Bloc A, Apt 12, Hamra St.<br>Beirut, 1107 2020<br>Lebanon</div>
-        <div style="display:flex; gap:.7rem; margin-top:1rem;">
-          <button class="btn-ghost">Edit</button>
-          <button class="btn-ghost">Remove</button>
-        </div>
+      <div id="saved-addresses">
+        <!-- filled by JS -->
       </div>
 
       <p style="font-family:var(--mono); font-size:.6rem; text-transform:uppercase; color:var(--muted); margin-bottom:1.1rem;">Add new address</p>
-      <form onsubmit="return false">
+      <div class="form-msg" id="addr-msg"></div>
+      <form id="form-addr">
         <div class="two-col">
-          <div class="field"><label>First name</label><input placeholder="First name"></div>
-          <div class="field"><label>Last name</label><input placeholder="Last name"></div>
+          <div class="field"><label>First name</label><input id="a-fname" placeholder="First name"></div>
+          <div class="field"><label>Last name</label><input id="a-lname" placeholder="Last name"></div>
         </div>
-        <div class="field"><label>Street / building / apt</label><input placeholder="e.g. Bloc A, Apt 12, Hamra St."></div>
-        <div class="field"><label>Line 2 (optional)</label><input placeholder="Floor, unit, etc."></div>
+        <div class="field"><label>Street / building / apt</label><input id="a-street" placeholder="e.g. Bloc A, Apt 12, Hamra St."></div>
+        <div class="field"><label>Line 2 (optional)</label><input id="a-line2" placeholder="Floor, unit, etc."></div>
         <div class="two-col">
-          <div class="field"><label>City</label><input placeholder="City"></div>
-          <div class="field"><label>Postal code</label><input placeholder="Postal code"></div>
+          <div class="field"><label>City</label><input id="a-city" placeholder="City"></div>
+          <div class="field"><label>Postal code</label><input id="a-postal" placeholder="Postal code"></div>
         </div>
         <div class="field">
           <label>Country</label>
-          <select>
+          <select id="a-country">
             <option>Lebanon</option>
             <option>United Arab Emirates</option>
             <option>Saudi Arabia</option>
@@ -314,7 +277,7 @@
             <option>Other</option>
           </select>
         </div>
-        <button class="btn-save">Save address</button>
+        <button type="submit" class="btn-save">Save address</button>
       </form>
     </section>
 
@@ -324,15 +287,15 @@
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">These can't be undone. Be careful.</p>
 
       <div class="d-box">
-        <p style="font-family:var(--mono); font-size:.68rem; text-transform:uppercase; color:#ff4444; margin-bottom:.5rem;">Export data</p>
-        <p style="font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:1.1rem;">Download everything: orders, account info, saved addresses. Takes a few minutes to prepare.</p>
-        <button class="btn-ghost">Request data export</button>
+        <p style="font-family:var(--mono); font-size:.68rem; text-transform:uppercase; color:#ff4444; margin-bottom:.5rem;">Sign out everywhere</p>
+        <p style="font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:1.1rem;">Signs you out from all devices. You'll need to log back in.</p>
+        <button class="btn-ghost" id="btn-signout-all">Sign out all devices</button>
       </div>
 
       <div class="d-box">
         <p style="font-family:var(--mono); font-size:.68rem; text-transform:uppercase; color:#ff4444; margin-bottom:.5rem;">Delete account</p>
         <p style="font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:1.1rem;">Permanently deletes your account and all saved data. Orders already placed won't be affected. This cannot be undone.</p>
-        <button class="btn-del">Delete my account</button>
+        <button class="btn-del" id="btn-delete">Delete my account</button>
       </div>
     </section>
 
@@ -350,15 +313,238 @@
   <small>© 2026 BitIO</small>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/cart.js"></script>
 <script>
-  const btn = document.getElementById('theme-btn');
-  btn.addEventListener('click', () => {
+  const themBtn = document.getElementById('theme-btn');
+  themBtn.addEventListener('click', () => {
     const isLight = document.documentElement.classList.contains('light');
     document.documentElement.classList.toggle('light', !isLight);
     localStorage.setItem('bitio-theme', isLight ? 'dark' : 'light');
-    btn.textContent = isLight ? '☀️' : '🌙';
+    themBtn.textContent = isLight ? '☀️' : '🌙';
   });
-  if (!document.documentElement.classList.contains('light')) btn.textContent = '☀️';
+  if (!document.documentElement.classList.contains('light')) themBtn.textContent = '☀️';
+
+  function showMsg(id, text, isErr) {
+    const el = document.getElementById(id);
+    el.textContent = text; el.style.display = 'block';
+    el.style.background = isErr ? 'rgba(255,68,68,.12)' : 'rgba(0,255,136,.10)';
+    el.style.color      = isErr ? '#ff4444' : 'var(--green)';
+    el.style.border     = isErr ? '1px solid rgba(255,68,68,.3)' : '1px solid rgba(0,255,136,.3)';
+  }
+
+  function loadProfileUI(profile, email) {
+    const initials = [profile.first_name?.[0], profile.last_name?.[0]].filter(Boolean).join('') || '?';
+    document.getElementById('avatar').textContent           = initials.toUpperCase();
+    document.getElementById('profile-username').textContent = profile.username;
+    document.getElementById('profile-email').textContent    = email;
+    document.getElementById('p-fname').value    = profile.first_name || '';
+    document.getElementById('p-lname').value    = profile.last_name  || '';
+    document.getElementById('p-username').value = profile.username   || '';
+    document.getElementById('p-email').value    = email              || '';
+    document.getElementById('p-bio').value      = profile.bio        || '';
+  }
+
+  document.getElementById('form-profile').addEventListener('submit', async e => {
+    e.preventDefault();
+    const updates = {
+      first_name: document.getElementById('p-fname').value.trim(),
+      last_name:  document.getElementById('p-lname').value.trim(),
+      username:   document.getElementById('p-username').value.trim(),
+      bio:        document.getElementById('p-bio').value.trim()
+    };
+    const { error } = await db.from('users').update(updates).eq('email', auth.user.email);
+    if (error) { showMsg('profile-msg', error.message, true); return; }
+    await auth._fetchProfile();
+    showMsg('profile-msg', 'Profile updated.', false);
+    loadProfileUI(auth.profile, auth.user.email);
+  });
+
+  document.getElementById('form-password').addEventListener('submit', async e => {
+    e.preventDefault();
+    const p1 = document.getElementById('new-pass').value;
+    const p2 = document.getElementById('new-pass2').value;
+    if (p1 !== p2) { showMsg('pass-msg', 'Passwords do not match.', true); return; }
+    if (p1.length < 6) { showMsg('pass-msg', 'Password too short.', true); return; }
+    const { error } = await db.auth.updateUser({ password: p1 });
+    if (error) { showMsg('pass-msg', error.message, true); return; }
+    showMsg('pass-msg', 'Password updated.', false);
+    document.getElementById('form-password').reset();
+  });
+
+  async function loadSessions() {
+    if (!auth.profile) return;
+    const { data: sessions } = await db
+      .from('user_sessions')
+      .select('*')
+      .eq('user_id', auth.profile.id)
+      .order('last_seen', { ascending: false });
+
+    const body = document.getElementById('sessions-body');
+    if (!sessions || !sessions.length) {
+      body.innerHTML = '<tr><td colspan="4" style="color:var(--muted); font-family:var(--mono); font-size:.72rem; padding:10px 0;">No sessions recorded yet.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = sessions.map((s, i) => `
+      <tr style="border-bottom:1px solid var(--line);">
+        <td style="padding:10px 0; font-weight:700;">${s.device}${i === 0 ? ' <span style="font-family:var(--mono); font-size:.6rem; color:var(--green); margin-left:.4rem;">current</span>' : ''}</td>
+        <td style="padding:10px 0; color:var(--muted);">${s.location || '—'}</td>
+        <td style="padding:10px 0; font-family:var(--mono); font-size:.68rem; color:var(--muted);">${new Date(s.last_seen).toLocaleDateString()}</td>
+        <td style="text-align:right;">${i > 0 ? `<button class="btn-ghost" data-sid="${s.id}">Revoke</button>` : ''}</td>
+      </tr>
+    `).join('');
+
+    body.querySelectorAll('[data-sid]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await db.from('user_sessions').delete().eq('id', parseInt(btn.dataset.sid));
+        loadSessions();
+      });
+    });
+  }
+
+  async function loadNotifPrefs() {
+    if (!auth.profile) return;
+    const { data } = await db
+      .from('user_notification_prefs')
+      .select('*')
+      .eq('user_id', auth.profile.id)
+      .maybeSingle();
+
+    if (data) {
+      document.getElementById('n-orders').checked = data.order_updates;
+      document.getElementById('n-stock').checked  = data.back_in_stock;
+      document.getElementById('n-price').checked  = data.price_drops;
+      document.getElementById('n-news').checked   = data.newsletter;
+      document.getElementById('n-sec').checked    = data.security_alerts;
+      document.getElementById('n-digest').value   = data.email_digest;
+    }
+  }
+
+  document.getElementById('btn-save-notifs').addEventListener('click', async () => {
+    if (!auth.profile) return;
+    const prefs = {
+      user_id:        auth.profile.id,
+      order_updates:  document.getElementById('n-orders').checked,
+      back_in_stock:  document.getElementById('n-stock').checked,
+      price_drops:    document.getElementById('n-price').checked,
+      newsletter:     document.getElementById('n-news').checked,
+      security_alerts:document.getElementById('n-sec').checked,
+      email_digest:   document.getElementById('n-digest').value,
+    };
+    // upsert so it creates the row if it doesn't exist
+    const { error } = await db.from('user_notification_prefs').upsert(prefs, { onConflict: 'user_id' });
+    showMsg('notif-msg', error ? error.message : 'Preferences saved.', !!error);
+  });
+
+  async function loadAddresses() {
+    if (!auth.profile) return;
+    const { data: addrs } = await db
+      .from('user_addresses')
+      .select('*')
+      .eq('user_id', auth.profile.id)
+      .order('is_default', { ascending: false });
+
+    const container = document.getElementById('saved-addresses');
+    if (!addrs || !addrs.length) {
+      container.innerHTML = '<p style="font-family:var(--mono); font-size:.78rem; color:var(--muted); margin-bottom:1.6rem;">No saved addresses yet.</p>';
+      return;
+    }
+
+    container.innerHTML = addrs.map(a => `
+      <div style="border:1px solid var(--line); padding:16px 18px; max-width:460px; margin-bottom:1.2rem; position:relative;">
+        ${a.is_default ? '<span style="position:absolute; top:12px; right:12px; font-family:var(--mono); font-size:.58rem; color:var(--green); border:1px solid rgba(0,255,136,.25); padding:2px 7px;">default</span>' : ''}
+        <div style="font-weight:700; margin-bottom:.3rem;">${[a.first_name, a.last_name].filter(Boolean).join(' ') || '—'}</div>
+        <div style="font-size:.82rem; color:var(--muted); line-height:1.7;">
+          ${a.street}${a.line2 ? ', ' + a.line2 : ''}<br>
+          ${a.city}${a.postal_code ? ' ' + a.postal_code : ''}<br>
+          ${a.country}
+        </div>
+        <div style="display:flex; gap:.7rem; margin-top:1rem;">
+          ${!a.is_default ? `<button class="btn-ghost" data-setdefault="${a.id}">Set default</button>` : ''}
+          <button class="btn-ghost" data-deladdr="${a.id}" style="color:#ff4444; border-color:rgba(255,60,60,.3);">Remove</button>
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('[data-setdefault]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        // unset all defaults then set this one
+        await db.from('user_addresses').update({ is_default: false }).eq('user_id', auth.profile.id);
+        await db.from('user_addresses').update({ is_default: true }).eq('id', parseInt(btn.dataset.setdefault));
+        loadAddresses();
+      });
+    });
+
+    container.querySelectorAll('[data-deladdr]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Remove this address?')) return;
+        await db.from('user_addresses').delete().eq('id', parseInt(btn.dataset.deladdr));
+        loadAddresses();
+      });
+    });
+  }
+
+  document.getElementById('form-addr').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!auth.profile) return;
+    const street = document.getElementById('a-street').value.trim();
+    const city   = document.getElementById('a-city').value.trim();
+    if (!street || !city) { showMsg('addr-msg', 'Street and city are required.', true); return; }
+
+    const { error } = await db.from('user_addresses').insert({
+      user_id:    auth.profile.id,
+      first_name: document.getElementById('a-fname').value.trim(),
+      last_name:  document.getElementById('a-lname').value.trim(),
+      street,
+      line2:      document.getElementById('a-line2').value.trim(),
+      city,
+      postal_code:document.getElementById('a-postal').value.trim(),
+      country:    document.getElementById('a-country').value,
+      is_default: false
+    });
+
+    if (error) { showMsg('addr-msg', error.message, true); return; }
+    showMsg('addr-msg', 'Address saved.', false);
+    document.getElementById('form-addr').reset();
+    loadAddresses();
+  });
+
+  document.getElementById('btn-signout-all').addEventListener('click', async () => {
+    await db.auth.signOut({ scope: 'global' });
+    window.location.href = 'index.html';
+  });
+
+  document.getElementById('btn-delete').addEventListener('click', async () => {
+    if (!confirm('Are you sure? This permanently deletes your account and cannot be undone.')) return;
+    // delete profile row first, then sign out (auth.users deletion needs service_role — just sign out for now)
+    if (auth.profile) {
+      await db.from('user_addresses').delete().eq('user_id', auth.profile.id);
+      await db.from('user_notification_prefs').delete().eq('user_id', auth.profile.id);
+      await db.from('user_sessions').delete().eq('user_id', auth.profile.id);
+      await db.from('users').delete().eq('id', auth.profile.id);
+    }
+    await db.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await auth.init();
+    cart.updateNavCount();
+
+    if (!auth.user) { window.location.href = 'login.html'; return; }
+
+    await new Promise(r => setTimeout(r, 100));
+
+    if (auth.profile) {
+      loadProfileUI(auth.profile, auth.user.email);
+    }
+
+    await Promise.all([loadSessions(), loadNotifPrefs(), loadAddresses()]);
+  });
 </script>
+
 </body>
 </html>
