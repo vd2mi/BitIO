@@ -10,7 +10,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 const DEFAULT_BOARDS = [
   {
     name: 'Arduino Uno Rev3', price: '$24.99', category: 'Microcontroller',
-    path: '../3DModels/arduino_uno_board.glb', wx: -10, scale: 3.2,
+    path: '3DModels/arduino_uno_board.glb', wx: -10, scale: 3.2,
     desc: 'The classic starting point. 8-bit AVR, dead-simple tooling, and a huge library of shields.',
     specs: [
       ['MCU', 'ATmega328P'], ['Clock', '16 MHz'], ['Flash', '32 KB'],
@@ -24,7 +24,7 @@ const DEFAULT_BOARDS = [
   },
   {
     name: 'ESP32-WROOM-32', price: '$8.99', category: 'WiFi / BT Module',
-    path: '../3DModels/esp32_wroom.glb', wx: 0, scale: 1.6,
+    path: '3DModels/esp32_wroom.glb', wx: 0, scale: 1.6,
     desc: 'Dual-core, 240 MHz, WiFi, and BLE for under $10. The go-to chip for IoT.',
     specs: [
       ['MCU', 'Xtensa LX6 ×2'], ['Clock', '240 MHz'], ['Flash', '4 MB'],
@@ -38,7 +38,7 @@ const DEFAULT_BOARDS = [
   },
   {
     name: 'Raspberry Pi 3 B', price: '$39.99', category: 'SBC / Linux',
-    path: '../3DModels/raspberry_pi_3.glb', wx: 10, scale: 1.8,
+    path: '3DModels/raspberry_pi_3.glb', wx: 10, scale: 1.8,
     desc: 'Full Linux on a credit card. Quad-core ARM, 1 GB RAM, HDMI out, 4× USB.',
     specs: [
       ['CPU', 'Cortex-A53 ×4'], ['Clock', '1.2 GHz'], ['RAM', '1 GB'],
