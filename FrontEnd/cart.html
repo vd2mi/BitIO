@@ -305,11 +305,18 @@
     savePurchaseToCookie(orderNum, total, items.reduce((s, i) => s + i.qty, 0));
 
     cart.clear();
+    cart.updateNavCount();
+
+    // hide the cart layout and show success full-width
+    document.querySelector('.cart-layout').style.display = 'none';
     document.getElementById('payment-section').style.display = 'none';
-    document.getElementById('order-success').style.display   = '';
-    document.getElementById('order-number').textContent       = `Order ${orderNum}`;
-    renderCart();
-    renderPastPurchases();
+
+    const successEl = document.getElementById('order-success');
+    successEl.style.display  = '';
+    successEl.style.maxWidth = '500px';
+    successEl.style.margin   = '4rem auto';
+
+    document.getElementById('order-number').textContent = `Order ${orderNum} — ${formatMoney(total)}`;
   });
 
   document.addEventListener('DOMContentLoaded', async () => {
