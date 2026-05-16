@@ -62,7 +62,7 @@
         <div class="auth-field">
           <label for="si-pass">Password</label>
           <input type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password">
-          <a href="#forgot-modal" class="auth-forgot">Forgot password?</a>
+          <a href="#" class="auth-forgot" id="open-forgot">Forgot password?</a>
         </div>
         <button type="submit" class="btn-submit" id="btn-signin">Sign In</button>
       </form>
@@ -100,9 +100,9 @@
 </main>
 
 <!-- forgot password modal -->
-<div id="forgot-modal" class="modal-overlay">
+<div id="forgot-modal" class="modal-overlay" style="display:none;">
   <div class="modal-box">
-    <a href="#" class="modal-close">&#10005;</a>
+    <a href="#" class="modal-close" id="close-forgot">&#10005;</a>
     <p class="modal-label">Account Recovery</p>
     <h2 class="modal-title">Enter your email</h2>
     <p class="modal-desc">We'll send a reset link to your inbox. Check spam if it doesn't show up.</p>
@@ -120,6 +120,20 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/db.js"></script>
 <script>
+  // forgot password modal
+  const forgotModal = document.getElementById('forgot-modal');
+  document.getElementById('open-forgot').addEventListener('click', e => {
+    e.preventDefault();
+    forgotModal.style.display = 'flex';
+  });
+  document.getElementById('close-forgot').addEventListener('click', e => {
+    e.preventDefault();
+    forgotModal.style.display = 'none';
+  });
+  forgotModal.addEventListener('click', e => {
+    if (e.target === forgotModal) forgotModal.style.display = 'none';
+  });
+
   // theme toggle
   document.getElementById('theme-btn').addEventListener('click', () => {
     const light = document.documentElement.classList.toggle('light');

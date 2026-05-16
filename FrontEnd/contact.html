@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — BitIO</title>
+  <link rel="stylesheet" href="Style.css">
+  <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">BIT<span>IO</span></a>
+  <ul>
+    <li><a href="index.html#products">Products</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="login.html" class="nav-auth" id="nav-auth-link">Sign In</a></li>
+    <li><a class="nav-cart" href="cart.html">Cart (<span id="cart-n">0</span>)</a></li>
+    <li><button id="theme-btn" title="Toggle theme">🌙</button></li>
+    <li><a href="settings.html" class="nav-user" title="Settings">&#9888;</a></li>
+  </ul>
+</nav>
+
+<div class="contact-page">
+  <h1>Contact <span>Us</span></h1>
+  <p class="contact-sub">Have a question, a bulk order inquiry, or just want to say hi? We're here.</p>
+
+  <div class="contact-grid">
+    <div class="map-box">
+      <iframe
+        src="https://maps.google.com/maps?q=26.3948879,50.1957014&hl=en&z=15&output=embed"
+        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        title="BitIO Location">
+      </iframe>
+    </div>
+
+    <div class="info-box">
+      <div class="info-item">
+        <div class="info-label">Address</div>
+        <div class="info-val">Building A11 <br> College of Computer Science and Information Technology <br> Imam Abdulrahman bin Faisal University<br> Dammam 31451</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Email</div>
+        <div class="info-val"><a href="mailto:admin@bitio.io">admin@bitio.io</a></div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Phone</div>
+        <div class="info-val"><a href="tel:+966542615926">+966 54 261 5926</a></div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Hours</div>
+        <div class="info-val">Mon – Fri &nbsp; 9:00 – 18:00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-form">
+    <h2>Send a Message</h2>
+    <div class="cf-row">
+      <div class="cf-field"><label>Name</label><input type="text" id="cf-name" placeholder="Your name"></div>
+      <div class="cf-field"><label>Email</label><input type="email" id="cf-email" placeholder="you@example.com"></div>
+    </div>
+    <div class="cf-field"><label>Subject</label><input type="text" id="cf-subject" placeholder="Order inquiry, bulk pricing, etc."></div>
+    <div class="cf-field"><label>Message</label><textarea id="cf-msg" placeholder="Write your message here..."></textarea></div>
+    <button class="btn-send" id="btn-send">Send Message</button>
+    <p class="send-ok" id="send-ok">✓ Message sent! We'll get back to you within 1 business day.</p>
+  </div>
+</div>
+
+<footer>
+  <span class="logo">BIT<span>IO</span></span>
+  <ul>
+    <li><a href="index.html#products">Products</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="#">Docs</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="admin.html">Admin</a></li>
+  </ul>
+  <small>© 2026 BitIO</small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/cart.js"></script>
+
+<script>
+  const btn = document.getElementById('theme-btn');
+  btn.addEventListener('click', () => {
+    const isLight = document.documentElement.classList.contains('light');
+    document.documentElement.classList.toggle('light', !isLight);
+    localStorage.setItem('bitio-theme', isLight ? 'dark' : 'light');
+    btn.textContent = isLight ? '☀️' : '🌙';
+  });
+  if (!document.documentElement.classList.contains('light')) btn.textContent = '☀️';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await auth.init();
+    cart.updateNavCount();
+  });
+
+  document.getElementById('btn-send').addEventListener('click', () => {
+    const name = document.getElementById('cf-name').value.trim();
+    const email = document.getElementById('cf-email').value.trim();
+    const msg = document.getElementById('cf-msg').value.trim();
+    if (!name || !email || !msg) { alert('Please fill in Name, Email and Message.'); return; }
+    document.getElementById('send-ok').style.display = 'block';
+    document.getElementById('cf-name').value = '';
+    document.getElementById('cf-email').value = '';
+    document.getElementById('cf-subject').value = '';
+    document.getElementById('cf-msg').value = '';
+  });
+</script>
+</body>
+</html>
