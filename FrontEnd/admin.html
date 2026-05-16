@@ -210,14 +210,13 @@
             </div>
             <div class="field"><label>Description</label><textarea id="inv-desc" placeholder="Short one or two sentence description."></textarea></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-              <div class="field"><label>Price (USD)</label><input type="number" id="inv-price" placeholder="0.00" step="0.01" min="0"></div>
+              <div class="field"><label>Price (SAR)</label><input type="number" id="inv-price" placeholder="0.00" step="0.01" min="0"></div>
               <div class="field"><label>Stock qty</label><input type="number" id="inv-qty" placeholder="0" min="0"></div>
             </div>
             <div class="field"><label>SKU / part number</label><input id="inv-sku" placeholder="e.g. ESP-WROOM-32D"></div>
             <div class="field">
               <label>Product image</label>
               <input type="file" id="inv-img" accept="image/*" style="background:var(--bg2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:.75rem;padding:7px 10px;cursor:pointer;">
-              <span class="hint">Uploads to Supabase Storage — create a public bucket called "product-images" first</span>
             </div>
             <button type="submit" class="btn-save">Add product</button>
           </form>
@@ -291,7 +290,7 @@
   });
   if (!document.documentElement.classList.contains('light')) btn.textContent = '☀️';
 
-  function fmt(n) { return '$' + Number(n).toFixed(2); }
+  function fmt(n) { return 'SAR ' + Number(n).toFixed(2); }
 
   function fmtDate(iso) {
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
@@ -572,7 +571,7 @@
         <tr data-prod-id="${p.id}">
           <td style="font-weight:700;">${p.name}</td>
           <td class="mono fl">${p.categories?.name || '—'}</td>
-          <td class="mono">$${Number(p.price).toFixed(2)}</td>
+          <td class="mono">SAR ${Number(p.price).toFixed(2)}</td>
           <td class="mono">${p.stock_quantity}</td>
           <td>
             <button class="tbl-btn prod-edit-btn">Edit</button>
@@ -585,7 +584,7 @@
               <div class="field" style="margin:0;"><label>Name</label><input class="edit-name" value="${p.name}"></div>
               <div class="field" style="margin:0;"><label>Price</label><input class="edit-price" type="number" step="0.01" value="${p.price}"></div>
               <div class="field" style="margin:0;"><label>Stock</label><input class="edit-stock" type="number" value="${p.stock_quantity}"></div>
-              <div class="field" style="margin:0;"><label>Image URL</label><input class="edit-img" value="${p.image_url || ''}"></div>
+              <div class="field" style="margin:0;"><label>Image</label><input type="file" class="edit-img-file" accept="image/*" data-current="${p.image_url || ''}" style="background:var(--bg2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:.7rem;padding:6px 8px;cursor:pointer;width:100%;"></div>
               <button class="btn-save prod-save-btn" data-id="${p.id}" style="white-space:nowrap;">Save</button>
             </div>
           </td>
@@ -601,12 +600,22 @@
 
       body.querySelectorAll('.prod-save-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
-          const id   = parseInt(btn.dataset.id);
-          const row  = document.getElementById(`edit-row-${id}`);
-          const name  = row.querySelector('.edit-name').value.trim();
+          const id = parseInt(btn.dataset.id);
+          const row = document.getElementById(`edit-row-${id}`);
+          const name = row.querySelector('.edit-name').value.trim();
           const price = parseFloat(row.querySelector('.edit-price').value);
           const stock = parseInt(row.querySelector('.edit-stock').value);
-          const imgUrl= row.querySelector('.edit-img').value.trim();
+          const fileInput = row.querySelector('.edit-img-file');
+          let imgUrl = fileInput.dataset.current;
+          if (fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const ext = file.name.split('.').pop();
+            const filename = Date.now() + '.' + ext;
+            const { error: upErr } = await db.storage.from('product-images').upload(filename, file, { cacheControl: '3600' });
+            if (upErr) { alert('Image upload failed: ' + upErr.message); return; }
+            const { data: urlData } = db.storage.from('product-images').getPublicUrl(filename);
+            imgUrl = urlData.publicUrl;
+          }
           const { error } = await db.from('products').update({
             name, price, stock_quantity: stock,
             stock_status: stock > 0 ? 'in_stock' : 'out_of_stock',
@@ -661,7 +670,7 @@
 
     document.getElementById('ret-open').textContent     = open;
     document.getElementById('ret-approved').textContent = approved;
-    document.getElementById('ret-refunded').textContent = '$' + refunded.toFixed(2);
+    document.getElementById('ret-refunded').textContent = 'SAR ' + refunded.toFixed(2);
 
     const body = document.getElementById('returns-body');
     if (!returns || !returns.length) {

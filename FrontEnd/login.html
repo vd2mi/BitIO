@@ -204,17 +204,38 @@
 
     setLoading('btn-signup', true);
 
+    // Check whether a profile row already exists for this email so we can
+    // give an accurate message before touching auth.
+    const { data: existing } = await db
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (existing) {
+      showMsg('auth-msg', 'An account with this email already exists. Try signing in instead.', true);
+      setLoading('btn-signup', false);
+      return;
+    }
+
     const { data, error } = await db.auth.signUp({ email, password: pass });
     if (error) {
-      showMsg('auth-msg', error.message, true);
+      // "User already registered" means an auth account exists but no profile row
+      // (orphaned from a previous failed registration attempt).
+      if (error.message.toLowerCase().includes('already registered') ||
+          error.message.toLowerCase().includes('already exists')) {
+        showMsg('auth-msg', 'An account with this email already exists. Try signing in instead.', true);
+      } else {
+        showMsg('auth-msg', error.message, true);
+      }
       setLoading('btn-signup', false);
       return;
     }
 
     if (data.user) {
       const { error: profileErr } = await db.from('users').insert({
-        username:      username,
-        email:         email,
+        username,
+        email,
         password_hash: 'managed_by_supabase_auth',
         first_name:    fname,
         last_name:     lname || '',
@@ -223,11 +244,17 @@
       });
 
       if (profileErr) {
-        // most likely a duplicate username
         if (profileErr.code === '23505') {
-          showMsg('auth-msg', 'That username is already taken. Try a different one.', true);
+          const hint = (profileErr.message || '').toLowerCase();
+          if (hint.includes('email')) {
+            showMsg('auth-msg', 'An account with this email already exists. Try signing in instead.', true);
+          } else if (hint.includes('username')) {
+            showMsg('auth-msg', 'That username is already taken. Try a different one.', true);
+          } else {
+            showMsg('auth-msg', 'A duplicate value was detected — ' + profileErr.message, true);
+          }
         } else {
-          showMsg('auth-msg', 'Account created but profile setup failed: ' + profileErr.message, true);
+          showMsg('auth-msg', 'Profile setup failed: ' + profileErr.message, true);
         }
         setLoading('btn-signup', false);
         return;
