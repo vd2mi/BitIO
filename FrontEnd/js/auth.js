@@ -61,7 +61,6 @@ const auth = {
       }
     }
 
-    // Admin dashboard link — only visible to admins, inserted after About
     let adminLi = document.querySelector('.nav-admin-li');
     if (this.profile?.role === 'admin') {
       if (!adminLi) {
