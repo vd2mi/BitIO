@@ -198,7 +198,7 @@
   });
   if (!document.documentElement.classList.contains('light')) btn.textContent = '☀️';
 
-  function fmt(n) { return 'SAR ' + Number(n).toFixed(2); }
+  function fmt(n) { return Number(n).toFixed(2) + ' SAR'; }
 
   function demandClass(unitsSold) {
     if (unitsSold >= 50) return 'd-hi';

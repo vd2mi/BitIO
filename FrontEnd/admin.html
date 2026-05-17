@@ -290,7 +290,7 @@
   });
   if (!document.documentElement.classList.contains('light')) btn.textContent = '☀️';
 
-  function fmt(n) { return 'SAR ' + Number(n).toFixed(2); }
+  function fmt(n) { return Number(n).toFixed(2) + ' SAR'; }
 
   function fmtDate(iso) {
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
@@ -571,7 +571,7 @@
         <tr data-prod-id="${p.id}">
           <td style="font-weight:700;">${p.name}</td>
           <td class="mono fl">${p.categories?.name || '-'}</td>
-          <td class="mono">SAR ${Number(p.price).toFixed(2)}</td>
+          <td class="mono">${Number(p.price).toFixed(2)} SAR</td>
           <td class="mono">${p.stock_quantity}</td>
           <td>
             <button class="tbl-btn prod-edit-btn">Edit</button>
@@ -670,7 +670,7 @@
 
     document.getElementById('ret-open').textContent     = open;
     document.getElementById('ret-approved').textContent = approved;
-    document.getElementById('ret-refunded').textContent = 'SAR ' + refunded.toFixed(2);
+    document.getElementById('ret-refunded').textContent = refunded.toFixed(2) + ' SAR';
 
     const body = document.getElementById('returns-body');
     if (!returns || !returns.length) {

@@ -244,7 +244,7 @@
         <div class="name">${p.name}</div>
         <div class="desc">${p.description || ''}</div>
         <div class="foot">
-          <span class="price">SAR ${Number(p.price).toFixed(2)}${label ? `<span style="font-size:.6rem; color:var(--muted); margin-left:.4rem;">${label}</span>` : ''}</span>
+          <span class="price">${Number(p.price).toFixed(2)} SAR${label ? `<span style="font-size:.6rem; color:var(--muted); margin-left:.4rem;">${label}</span>` : ''}</span>
           <button class="btn-buy"
             data-id="${p.id}" data-name="${p.name}"
             data-price="${p.price}" data-cat="${catName}"
@@ -372,7 +372,7 @@
     document.getElementById('detail-img').style.display = p.image_url ? 'block' : 'none';
     document.getElementById('detail-cat').textContent   = p._catName || '';
     document.getElementById('detail-name').textContent  = p.name;
-    document.getElementById('detail-price').textContent = 'SAR ' + Number(p.price).toFixed(2);
+    document.getElementById('detail-price').textContent = Number(p.price).toFixed(2) + ' SAR';
     document.getElementById('detail-desc').textContent  = p.description || '';
     document.getElementById('detail-stock').textContent =
       outOfStock ? 'Out of stock' : `${p.stock_quantity} in stock`;
