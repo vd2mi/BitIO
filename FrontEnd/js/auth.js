@@ -61,6 +61,25 @@ const auth = {
       }
     }
 
+    // Admin dashboard link — only visible to admins, inserted after About
+    let adminLi = document.querySelector('.nav-admin-li');
+    if (this.profile?.role === 'admin') {
+      if (!adminLi) {
+        adminLi = document.createElement('li');
+        adminLi.className = 'nav-admin-li';
+        adminLi.innerHTML = '<a href="admin.html">Admin</a>';
+        const aboutLink = document.querySelector('nav a[href*="about"]');
+        if (aboutLink) {
+          aboutLink.closest('li').insertAdjacentElement('afterend', adminLi);
+        } else {
+          const navUl = document.querySelector('nav ul');
+          if (navUl) navUl.appendChild(adminLi);
+        }
+      }
+    } else if (adminLi) {
+      adminLi.remove();
+    }
+
     if (typeof cart !== 'undefined') cart.updateNavCount();
   },
 
