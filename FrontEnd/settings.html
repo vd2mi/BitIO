@@ -134,7 +134,7 @@
 
   <main>
 
-    <!-- PROFILE -->
+    
     <section class="panel" id="p-profile">
       <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Profile</h2>
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Your account info.</p>
@@ -161,14 +161,14 @@
         <div class="field"><label>Email</label><input type="email" id="p-email" placeholder="you@example.com"></div>
         <div class="field">
           <label>Bio</label>
-          <textarea id="p-bio" maxlength="160" placeholder="Tell us a little about yourself."></textarea>
+          <textarea id="p-bio" maxlength="160" placeholder="Tell us about yourself"></textarea>
           <span class="hint">max 160 chars</span>
         </div>
         <button type="submit" class="btn-save">Save changes</button>
       </form>
     </section>
 
-    <!-- SECURITY -->
+    
     <section class="panel" id="p-security">
       <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Security</h2>
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Password and active sessions.</p>
@@ -178,10 +178,10 @@
       <form id="form-password">
         <div class="field">
           <label>New password</label>
-          <input type="password" id="new-pass" placeholder="••••••••">
+          <input type="password" id="new-pass" placeholder="********">
           <span class="hint">at least 6 characters</span>
         </div>
-        <div class="field"><label>Confirm new password</label><input type="password" id="new-pass2" placeholder="••••••••"></div>
+        <div class="field"><label>Confirm new password</label><input type="password" id="new-pass2" placeholder="********"></div>
         <button type="submit" class="btn-save">Update password</button>
       </form>
 
@@ -203,7 +203,7 @@
       </table>
     </section>
 
-    <!-- NOTIFICATIONS -->
+    
     <section class="panel" id="p-notifs">
       <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Notifications</h2>
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">We don't spam. Turn things off if you want.</p>
@@ -244,13 +244,12 @@
       <button class="btn-save" id="btn-save-notifs">Save preferences</button>
     </section>
 
-    <!-- ADDRESSES -->
+    
     <section class="panel" id="p-addr">
       <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Addresses</h2>
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Saved shipping addresses for faster checkout.</p>
 
       <div id="saved-addresses">
-        <!-- filled by JS -->
       </div>
 
       <p style="font-family:var(--mono); font-size:.6rem; text-transform:uppercase; color:var(--muted); margin-bottom:1.1rem;">Add new address</p>
@@ -260,8 +259,8 @@
           <div class="field"><label>First name</label><input id="a-fname" placeholder="First name"></div>
           <div class="field"><label>Last name</label><input id="a-lname" placeholder="Last name"></div>
         </div>
-        <div class="field"><label>Street / building / apt</label><input id="a-street" placeholder="e.g. Bloc A, Apt 12, Hamra St."></div>
-        <div class="field"><label>Line 2 (optional)</label><input id="a-line2" placeholder="Floor, unit, etc."></div>
+        <div class="field"><label>Street / building / apt</label><input id="a-street" placeholder="Line 1"></div>
+        <div class="field"><label>Line 2 (optional)</label><input id="a-line2" placeholder="Line 2"></div>
         <div class="two-col">
           <div class="field"><label>City</label><input id="a-city" placeholder="City"></div>
           <div class="field"><label>Postal code</label><input id="a-postal" placeholder="Postal code"></div>
@@ -269,9 +268,9 @@
         <div class="field">
           <label>Country</label>
           <select id="a-country">
-            <option>Lebanon</option>
-            <option>United Arab Emirates</option>
             <option>Saudi Arabia</option>
+            <option>United Arab Emirates</option>
+            <option>Lebanon</option>
             <option>Jordan</option>
             <option>Egypt</option>
             <option>Other</option>
@@ -281,7 +280,7 @@
       </form>
     </section>
 
-    <!-- DANGER ZONE -->
+    
     <section class="panel" id="p-danger">
       <h2 style="font-size:1.2rem; margin-bottom:.25rem;">Danger Zone</h2>
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">These can't be undone. Be careful.</p>
@@ -434,7 +433,6 @@
       security_alerts:document.getElementById('n-sec').checked,
       email_digest:   document.getElementById('n-digest').value,
     };
-    // upsert so it creates the row if it doesn't exist
     const { error } = await db.from('user_notification_prefs').upsert(prefs, { onConflict: 'user_id' });
     showMsg('notif-msg', error ? error.message : 'Preferences saved.', !!error);
   });
@@ -471,7 +469,6 @@
 
     container.querySelectorAll('[data-setdefault]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        // unset all defaults then set this one
         await db.from('user_addresses').update({ is_default: false }).eq('user_id', auth.profile.id);
         await db.from('user_addresses').update({ is_default: true }).eq('id', parseInt(btn.dataset.setdefault));
         loadAddresses();
@@ -519,7 +516,6 @@
 
   document.getElementById('btn-delete').addEventListener('click', async () => {
     if (!confirm('Are you sure? This permanently deletes your account and cannot be undone.')) return;
-    // delete profile row first, then sign out (auth.users deletion needs service_role — just sign out for now)
     if (auth.profile) {
       await db.from('user_addresses').delete().eq('user_id', auth.profile.id);
       await db.from('user_notification_prefs').delete().eq('user_id', auth.profile.id);

@@ -201,19 +201,19 @@
           <p class="slbl">Add product</p>
           <div id="inv-msg" style="display:none; padding:9px 13px; margin-bottom:1rem; font-family:var(--mono); font-size:.73rem;"></div>
           <form id="add-product-form">
-            <div class="field"><label>Product name</label><input id="inv-name" placeholder="e.g. ESP32-WROOM-32"></div>
+            <div class="field"><label>Product name</label><input id="inv-name" placeholder="Name"></div>
             <div class="field">
               <label>Category</label>
               <select id="inv-cat">
                 <option value="">Select...</option>
               </select>
             </div>
-            <div class="field"><label>Description</label><textarea id="inv-desc" placeholder="Short one or two sentence description."></textarea></div>
+            <div class="field"><label>Description</label><textarea id="inv-desc" placeholder="Description."></textarea></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
               <div class="field"><label>Price (SAR)</label><input type="number" id="inv-price" placeholder="0.00" step="0.01" min="0"></div>
               <div class="field"><label>Stock qty</label><input type="number" id="inv-qty" placeholder="0" min="0"></div>
             </div>
-            <div class="field"><label>SKU / part number</label><input id="inv-sku" placeholder="e.g. ESP-WROOM-32D"></div>
+            <div class="field"><label>SKU / part number</label><input id="inv-sku" placeholder="SKU"></div>
             <div class="field">
               <label>Product image</label>
               <input type="file" id="inv-img" accept="image/*" style="background:var(--bg2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:.75rem;padding:7px 10px;cursor:pointer;">
@@ -326,12 +326,12 @@
     document.getElementById('stat-users').textContent    = (users || []).filter(u => u.status !== 'banned').length;
     document.getElementById('stat-returns').textContent  = openReturns || 0;
 
-    // recent orders — fetch with customer info separately
+    
     const recent = (orders || [])
       .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
       .slice(0, 5);
 
-    // get all orders with full details
+    
     const { data: recentFull } = await db
       .from('orders')
       .select('*, users!customer_id(username, first_name, last_name)')
@@ -395,7 +395,7 @@
 
     body.innerHTML = users.map(renderRow).join('');
 
-    // ban / unban
+    
     body.addEventListener('click', async e => {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
@@ -405,7 +405,7 @@
       if (!error) loadUsers();
     });
 
-    // search
+    
     document.getElementById('user-search').addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
       body.querySelectorAll('tr').forEach(row => {
@@ -455,14 +455,14 @@
         </tr>`;
     }).join('');
 
-    // status change dropdowns
+    
     body.querySelectorAll('select[data-order-id]').forEach(sel => {
       sel.addEventListener('change', async () => {
         await db.from('orders').update({ status: sel.value }).eq('id', parseInt(sel.dataset.orderId));
       });
     });
 
-    // filter tabs
+    
     document.getElementById('order-filter-bar').addEventListener('click', e => {
       const span = e.target.closest('[data-status]');
       if (!span) return;
@@ -485,7 +485,7 @@
     const { data: categories } = await db.from('categories').select('*').order('name');
     const { data: products }   = await db.from('products').select('*').order('stock_quantity');
 
-    // populate category dropdown
+    
     const catSel = document.getElementById('inv-cat');
     (categories || []).forEach(c => {
       const opt = document.createElement('option');
@@ -493,7 +493,7 @@
       catSel.appendChild(opt);
     });
 
-    // stock list
+    
     const list = document.getElementById('stock-list');
     if (!products || !products.length) {
       list.innerHTML = '<p style="font-family:var(--mono); font-size:.72rem; color:var(--muted);">No products yet.</p>';
@@ -512,7 +512,7 @@
       }).join('');
     }
 
-    // add product form
+    
     document.getElementById('add-product-form').addEventListener('submit', async e => {
       e.preventDefault();
       const name  = document.getElementById('inv-name').value.trim();
@@ -554,7 +554,7 @@
       loadInventory();
     });
 
-    // product search & manage
+    
     await loadProductManage(categories || []);
   }
 
@@ -712,13 +712,13 @@
 
     if (!auth.user) { window.location.href = 'login.html'; return; }
 
-    // wait a tick for profile to load, then check role
+    
     await new Promise(r => setTimeout(r, 100));
     if (auth.profile?.role !== 'admin') { window.location.href = 'index.html'; return; }
 
     document.getElementById('admin-email').textContent = auth.user.email;
 
-    // load all tabs in parallel
+    
     await Promise.all([loadOverview(), loadUsers(), loadOrders(), loadInventory(), loadReturns()]);
   });
 </script>

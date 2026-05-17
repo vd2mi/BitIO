@@ -30,7 +30,7 @@
         <button id="btn-clear" onclick="if(confirm('Clear the entire cart?')){cart.clear();renderCart();}" style="font-family:var(--mono);font-size:.6rem;padding:3px 10px;background:none;border:1px solid var(--line);color:var(--muted);cursor:pointer;margin-left:.8rem;vertical-align:middle;">Clear all</button>
       </h1>
       <div class="cart-list" id="cart-list">
-        <!-- filled by JS -->
+
       </div>
       <div id="cart-empty" style="display:none; padding:3rem 0; text-align:center; font-family:var(--mono); font-size:.8rem; color:var(--muted);">
         Your cart is empty. <a href="index.html#products" style="color:var(--green);">Browse products →</a>
@@ -53,7 +53,7 @@
         <form class="payment-form" id="payment-form" action="#">
           <div class="auth-field">
             <label for="card-name">Name on Card</label>
-            <input type="text" id="card-name" placeholder="Ada Lovelace" autocomplete="cc-name">
+            <input type="text" id="card-name" placeholder="Name on card" autocomplete="cc-name">
           </div>
           <div class="auth-field">
             <label for="card-num">Card Number</label>
@@ -72,16 +72,10 @@
           <button type="submit" class="btn-submit" id="btn-checkout">Place Order — $0.00</button>
         </form>
         <p style="font-family:var(--mono); font-size:.58rem; color:var(--muted); margin-top:.8rem; opacity:.7;">
-          Demo mode — no real payment is processed.
+          Demo mode - no real payment is processed.
         </p>
       </div>
 
-      <div id="order-success" style="display:none; padding:2rem; text-align:center; border:1px solid rgba(0,255,136,.25);">
-        <div style="font-family:var(--mono); font-size:1.4rem; color:var(--green); margin-bottom:.6rem;">✓</div>
-        <div style="font-weight:700; margin-bottom:.4rem;">Order placed!</div>
-        <div id="order-number" style="font-family:var(--mono); font-size:.75rem; color:var(--muted); margin-bottom:1.2rem;"></div>
-        <a href="index.html#products" style="font-family:var(--mono); font-size:.73rem; color:var(--green);">Continue shopping →</a>
-      </div>
     </div>
 
   </div>
@@ -90,6 +84,16 @@
     <div id="past-list"></div>
   </div>
 </main>
+
+<!-- Order Confirmed Popup -->
+<div id="order-popup" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:900; align-items:center; justify-content:center;">
+  <div style="background:var(--bg); border:1px solid rgba(0,255,136,.3); padding:2.5rem 2rem; text-align:center; max-width:380px; width:90%; position:relative;">
+    <div style="font-size:2rem; color:var(--green); margin-bottom:.5rem;">✓</div>
+    <div style="font-weight:700; font-size:1.1rem; margin-bottom:.4rem;">Order Confirmed!</div>
+    <div id="popup-order-number" style="font-family:var(--mono); font-size:.73rem; color:var(--muted); margin-bottom:1.4rem;"></div>
+    <a href="index.html#products" style="display:inline-block; font-family:var(--mono); font-size:.73rem; color:#000; background:var(--green); padding:9px 22px; text-decoration:none;">Continue Shopping</a>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/db.js"></script>
@@ -106,7 +110,7 @@
 
   function formatMoney(n) { return 'SAR ' + Number(n).toFixed(2); }
 
-  // cookie helpers
+ 
   function setCookie(name, val, days) {
     const exp = new Date(Date.now() + days * 864e5).toUTCString();
     document.cookie = `${name}=${encodeURIComponent(val)};expires=${exp};path=/`;
@@ -120,7 +124,7 @@
     let history = [];
     try { history = JSON.parse(getCookie('bitio-orders') || '[]'); } catch {}
     history.unshift({ n: orderNum, t: total, d: new Date().toLocaleDateString(), i: itemCount });
-    history = history.slice(0, 5); // keep last 5
+    history = history.slice(0, 5); 
     setCookie('bitio-orders', JSON.stringify(history), 30);
   }
 
@@ -184,7 +188,7 @@
       </div>
     `).join('');
 
-    // qty +/- buttons
+    
     list.querySelectorAll('.qty-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id  = parseInt(btn.dataset.id);
@@ -195,7 +199,7 @@
       });
     });
 
-    // remove buttons
+    
     list.querySelectorAll('.remove-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         cart.remove(parseInt(btn.dataset.id));
@@ -254,7 +258,7 @@
     const total    = sub + shipping;
     const orderNum = 'BT-' + Date.now();
 
-    // insert order
+    
     const { data: order, error: orderErr } = await db
       .from('orders')
       .insert({
@@ -275,7 +279,7 @@
       return;
     }
 
-    // insert order items
+    
     const lineItems = items.map(i => ({
       order_id:   order.id,
       product_id: i.id,
@@ -286,11 +290,11 @@
     const { error: itemsErr } = await db.from('order_items').insert(lineItems);
 
     if (itemsErr) {
-      // order is placed but items failed — edge case, just show the order
+      
       console.warn('order items insert failed:', itemsErr);
     }
 
-    // reduce stock for each purchased item
+    
     for (const item of items) {
       const { data: prod } = await db.from('products').select('stock_quantity').eq('id', item.id).single();
       if (prod) {
@@ -306,17 +310,11 @@
 
     cart.clear();
     cart.updateNavCount();
+    renderCart();
 
-    // hide the cart layout and show success full-width
-    document.querySelector('.cart-layout').style.display = 'none';
-    document.getElementById('payment-section').style.display = 'none';
-
-    const successEl = document.getElementById('order-success');
-    successEl.style.display  = '';
-    successEl.style.maxWidth = '500px';
-    successEl.style.margin   = '4rem auto';
-
-    document.getElementById('order-number').textContent = `Order ${orderNum} — ${formatMoney(total)}`;
+    document.getElementById('popup-order-number').textContent = `Order ${orderNum} — ${formatMoney(total)}`;
+    const popup = document.getElementById('order-popup');
+    popup.style.display = 'flex';
   });
 
   document.addEventListener('DOMContentLoaded', async () => {

@@ -108,7 +108,7 @@
 
   <div class="ticker">
     <div class="ticker-inner" id="ticker-inner">
-      <!-- filled by JS -->
+      
     </div>
   </div>
 
@@ -133,7 +133,7 @@
 
       <p class="slbl">Categories</p>
       <div class="cat-grid" id="cat-grid">
-        <!-- filled by JS -->
+        
       </div>
     </div>
 
@@ -224,7 +224,6 @@
     }
 
     const html = products.map(tickItem).join('');
-    // duplicate for seamless loop
     inner.innerHTML = html + html;
   }
 
@@ -407,7 +406,7 @@
       return;
     }
 
-    // get sales metrics for current month
+    
     const now        = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
     const { data: metrics } = await db
@@ -415,7 +414,7 @@
       .select('product_id, units_sold, trend_percent')
       .gte('metric_date', monthStart);
 
-    // map metrics by product_id
+    
     const metMap = {};
     (metrics || []).forEach(m => {
       if (!metMap[m.product_id]) metMap[m.product_id] = { sold: 0, trend: 0 };
@@ -423,11 +422,11 @@
       metMap[m.product_id].trend  = m.trend_percent;
     });
 
-    // build a category lookup
+    
     const catById = {};
     (categories || []).forEach(c => { catById[c.id] = c.name; });
 
-    // enrich products
+    
     const enriched = products.map(p => ({
       ...p,
       _catName: catById[p.category_id] || '—',
@@ -435,7 +434,7 @@
       _trend:   metMap[p.id]?.trend || 0,
     }));
 
-    // update header
+    
     document.getElementById('mkt-count').textContent = enriched.length;
     document.getElementById('mkt-date').textContent  =
       'Updated ' + now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });

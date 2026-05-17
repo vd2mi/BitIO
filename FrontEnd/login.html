@@ -51,7 +51,7 @@
         <label for="tab-signup" class="auth-tab">Create Account</label>
       </div>
 
-      <!-- error/success message shown above the form -->
+      
       <div id="auth-msg" style="display:none; padding:9px 13px; margin-bottom:1rem; font-family:var(--mono); font-size:.73rem;"></div>
 
       <form id="form-signin" class="auth-form" action="#">
@@ -61,7 +61,7 @@
         </div>
         <div class="auth-field">
           <label for="si-pass">Password</label>
-          <input type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password">
+          <input type="password" id="si-pass" placeholder="********" autocomplete="current-password">
           <a href="#" class="auth-forgot" id="open-forgot">Forgot password?</a>
         </div>
         <button type="submit" class="btn-submit" id="btn-signin">Sign In</button>
@@ -70,15 +70,15 @@
       <form id="form-signup" class="auth-form" action="#">
         <div class="auth-field">
           <label for="su-fname">First name</label>
-          <input type="text" id="su-fname" placeholder="Ada" autocomplete="given-name">
+          <input type="text" id="su-fname" placeholder="Enter your fisrt name" autocomplete="given-name">
         </div>
         <div class="auth-field">
           <label for="su-lname">Last name</label>
-          <input type="text" id="su-lname" placeholder="Lovelace" autocomplete="family-name">
+          <input type="text" id="su-lname" placeholder="Enter your last name" autocomplete="family-name">
         </div>
         <div class="auth-field">
           <label for="su-username">Username</label>
-          <input type="text" id="su-username" placeholder="ada_lovelace" autocomplete="username">
+          <input type="text" id="su-username" placeholder="Enter your username" autocomplete="username">
         </div>
         <div class="auth-field">
           <label for="su-email">Email</label>
@@ -86,11 +86,11 @@
         </div>
         <div class="auth-field">
           <label for="su-pass">Password</label>
-          <input type="password" id="su-pass" placeholder="••••••••" autocomplete="new-password">
+          <input type="password" id="su-pass" placeholder="********" autocomplete="new-password">
         </div>
         <div class="auth-field">
           <label for="su-pass2">Confirm Password</label>
-          <input type="password" id="su-pass2" placeholder="••••••••" autocomplete="new-password">
+          <input type="password" id="su-pass2" placeholder="********" autocomplete="new-password">
         </div>
         <button type="submit" class="btn-submit" id="btn-signup">Create Account</button>
       </form>
@@ -99,7 +99,7 @@
   </div>
 </main>
 
-<!-- forgot password modal -->
+
 <div id="forgot-modal" class="modal-overlay" style="display:none;">
   <div class="modal-box">
     <a href="#" class="modal-close" id="close-forgot">&#10005;</a>
@@ -120,7 +120,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/db.js"></script>
 <script>
-  // forgot password modal
   const forgotModal = document.getElementById('forgot-modal');
   document.getElementById('open-forgot').addEventListener('click', e => {
     e.preventDefault();
@@ -134,14 +133,14 @@
     if (e.target === forgotModal) forgotModal.style.display = 'none';
   });
 
-  // theme toggle
+  
   document.getElementById('theme-btn').addEventListener('click', () => {
     const light = document.documentElement.classList.toggle('light');
     localStorage.setItem('bitio-theme', light ? 'light' : 'dark');
     document.getElementById('theme-btn').textContent = light ? '🌙' : '☀';
   });
 
-  // if already logged in, go home
+  
   db.auth.getSession().then(({ data: { session } }) => {
     if (session) window.location.href = 'index.html';
   });
@@ -204,8 +203,7 @@
 
     setLoading('btn-signup', true);
 
-    // Check whether a profile row already exists for this email so we can
-    // give an accurate message before touching auth.
+    
     const { data: existing } = await db
       .from('users')
       .select('id')
@@ -220,8 +218,6 @@
 
     const { data, error } = await db.auth.signUp({ email, password: pass });
     if (error) {
-      // "User already registered" means an auth account exists but no profile row
-      // (orphaned from a previous failed registration attempt).
       if (error.message.toLowerCase().includes('already registered') ||
           error.message.toLowerCase().includes('already exists')) {
         showMsg('auth-msg', 'An account with this email already exists. Try signing in instead.', true);

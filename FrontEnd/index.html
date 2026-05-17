@@ -75,7 +75,7 @@
   </ul>
 </nav>
 
-<!-- hero -->
+
 <section id="hero">
   <canvas id="c3d"></canvas>
   <div id="hs-layer"></div>
@@ -101,7 +101,7 @@
   </div>
 </section>
 
-<!-- about -->
+
 <section id="about">
   <div class="about-l">
     <h2>Not a parts bin.<br><em>A toolkit.</em></h2>
@@ -124,7 +124,7 @@
   </ul>
 </section>
 
-<!-- products -->
+
 <section id="products">
   <h2>In Stock <span id="product-count">—</span></h2>
 
@@ -139,7 +139,7 @@
   </div>
 </section>
 
-<!-- footer -->
+
 <footer>
   <span class="logo">BIT<span>IO</span></span>
   <ul>
@@ -151,7 +151,7 @@
   <small>© 2026 BitIO</small>
 </footer>
 
-<!-- product detail modal -->
+
 <div id="detail-modal" class="overlay-modal">
   <div class="modal-inner">
     <button class="modal-close-btn" id="detail-close">✕</button>
@@ -186,7 +186,7 @@
   </div>
 </div>
 
-<!-- help window -->
+
 <button class="help-btn" id="help-btn" title="Help">?</button>
 
 <div id="help-modal" class="overlay-modal">
@@ -227,7 +227,7 @@
     return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
 
-  // all loaded products stored here so the detail modal can look them up
+  
   let allProducts = [];
 
   function productCard(p, catName) {
@@ -302,10 +302,10 @@
       container.appendChild(section);
     });
 
-    // clicking the card body opens detail modal; clicking the button does quick-add
+    
     container.querySelectorAll('.card').forEach(card => {
       card.addEventListener('click', e => {
-        if (e.target.closest('.btn-buy')) return; // let button handle itself
+        if (e.target.closest('.btn-buy')) return; 
         const pid = parseInt(card.dataset.pid);
         const p   = allProducts.find(x => x.id === pid);
         if (p) openDetailModal(p);
@@ -364,7 +364,7 @@
     buildProductGrid(categories || [], products);
   }
 
-  // product detail modal
+  
   function openDetailModal(p) {
     const outOfStock = p.stock_status === 'out_of_stock' || p.stock_quantity === 0;
 
@@ -429,7 +429,7 @@
     if (e.target === document.getElementById('detail-modal')) closeDetailModal();
   });
 
-  // help modal
+  
   document.getElementById('help-btn').addEventListener('click', () => {
     document.getElementById('help-modal').classList.add('open');
   });
