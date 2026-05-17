@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BitIO — Microcontroller Store</title>
+  <title>BitIO - Microcontroller Store</title>
   <link rel="stylesheet" href="Style.css">
   <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
   <style>
@@ -105,7 +105,7 @@
 <section id="about">
   <div class="about-l">
     <h2>Not a parts bin.<br><em>A toolkit.</em></h2>
-    <p>We don't stock everything — we stock the right things. Every board is authentic, tested, and actually in stock before it goes on the site.</p>
+    <p>We don't stock everything - we stock the right things. Every board is authentic, tested, and actually in stock before it goes on the site.</p>
     <p>Started by engineering students who got tired of waiting three weeks for a Chinese clone that didn't match the datasheet.</p>
   </div>
   <ul class="about-r">
@@ -126,7 +126,7 @@
 
 
 <section id="products">
-  <h2>In Stock <span id="product-count">—</span></h2>
+  <h2>In Stock <span id="product-count">-</span></h2>
 
   <div class="prod-filters" id="filter-bar">
     <button class="prod-filter active" data-cat="all">All</button>
@@ -195,12 +195,12 @@
     <div class="modal-body">
       <h2 style="font-size:1.1rem; margin-bottom:1.2rem;">How to use BitIO</h2>
       <div style="font-size:.83rem; color:var(--muted); line-height:1.8;">
-        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Browse products</strong> — scroll down past the 3D boards to see the full catalog. Use the filter buttons or search bar to find what you need.</p>
-        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Product details</strong> — click anywhere on a product card to open its detail view, where you can set a quantity before adding to cart.</p>
-        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">3D boards</strong> — click any board in the hero section to inspect it up close. Drag to rotate. Click the hotspot dots to see what each component is.</p>
-        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Cart</strong> — click the Cart link in the nav. You can change quantities, remove items, or clear the whole cart before checking out.</p>
-        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Account</strong> — sign up or sign in via the nav link. Your addresses and notification preferences are saved under Settings.</p>
-        <p><strong style="color:var(--text);">Admin</strong> — if your account has admin access, you'll see the full dashboard at /admin.html with product management, orders, and returns.</p>
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Browse products</strong> - scroll down past the 3D boards to see the full catalog. Use the filter buttons or search bar to find what you need.</p>
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Product details</strong> - click anywhere on a product card to open its detail view, where you can set a quantity before adding to cart.</p>
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">3D boards</strong> - click any board in the hero section to inspect it up close. Drag to rotate. Click the hotspot dots to see what each component is.</p>
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Cart</strong> - click the Cart link in the nav. You can change quantities, remove items, or clear the whole cart before checking out.</p>
+        <p style="margin-bottom:.8rem;"><strong style="color:var(--text);">Account</strong> - sign up or sign in via the nav link. Your addresses and notification preferences are saved under Settings.</p>
+        <p><strong style="color:var(--text);">Admin</strong> - if your account has admin access, you'll see the full dashboard at /admin.html with product management, orders, and returns.</p>
       </div>
     </div>
   </div>
@@ -319,7 +319,7 @@
         const stock = parseInt(btn.dataset.stock);
         const inCart = cart.get().find(i => i.id === parseInt(btn.dataset.id))?.qty || 0;
         if (inCart >= stock) {
-          alert(`Only ${stock} in stock — you already have ${inCart} in your cart.`);
+          alert(`Only ${stock} in stock - you already have ${inCart} in your cart.`);
           return;
         }
         cart.add({
@@ -404,7 +404,7 @@
       if (inCart + qty > p.stock_quantity) {
         document.getElementById('detail-msg').style.display = 'block';
         document.getElementById('detail-msg').style.color   = '#ff4444';
-        document.getElementById('detail-msg').textContent   = `Only ${p.stock_quantity} in stock — you already have ${inCart} in your cart.`;
+        document.getElementById('detail-msg').textContent   = `Only ${p.stock_quantity} in stock - you already have ${inCart} in your cart.`;
         return;
       }
       for (let i = 0; i < qty; i++) {

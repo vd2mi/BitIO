@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — BitIO</title>
+  <title>Admin - BitIO</title>
   <link rel="stylesheet" href="Style.css">
   <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
   <style>
@@ -126,7 +126,7 @@
       <li><label for="a-returns">↩  Returns</label></li>
     </ul>
     <div style="padding:16px 18px; margin-top:auto; font-family:var(--mono); font-size:.62rem; color:var(--muted); line-height:1.8;">
-      Logged in as<br><span id="admin-email" style="color:var(--text);">—</span><br>
+      Logged in as<br><span id="admin-email" style="color:var(--text);">-</span><br>
       <button onclick="auth.signOut()" style="background:none;border:none;font-family:var(--mono);font-size:.62rem;color:var(--muted);cursor:pointer;padding:4px 0;margin-top:4px;">Sign out →</button>
     </div>
   </aside>
@@ -139,10 +139,10 @@
       <p style="font-size:.78rem; color:var(--muted); margin-bottom:1.8rem;">Last 30 days</p>
 
       <div class="stats">
-        <div class="stat"><div class="lbl">Revenue</div><div class="val" id="stat-revenue">—</div></div>
-        <div class="stat"><div class="lbl">Orders</div><div class="val" id="stat-orders">—</div></div>
-        <div class="stat"><div class="lbl">Users</div><div class="val" id="stat-users">—</div></div>
-        <div class="stat"><div class="lbl">Open Returns</div><div class="val" id="stat-returns">—</div></div>
+        <div class="stat"><div class="lbl">Revenue</div><div class="val" id="stat-revenue">-</div></div>
+        <div class="stat"><div class="lbl">Orders</div><div class="val" id="stat-orders">-</div></div>
+        <div class="stat"><div class="lbl">Users</div><div class="val" id="stat-users">-</div></div>
+        <div class="stat"><div class="lbl">Open Returns</div><div class="val" id="stat-returns">-</div></div>
       </div>
 
       <p class="slbl">Recent orders</p>
@@ -254,15 +254,15 @@
       <div style="display:flex; gap:1rem; margin-bottom:2rem;">
         <div style="background:var(--bg2); border:1px solid var(--line); padding:13px 16px; min-width:110px;">
           <div style="font-family:var(--mono); font-size:.56rem; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem;">Open</div>
-          <div id="ret-open" style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">—</div>
+          <div id="ret-open" style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">-</div>
         </div>
         <div style="background:var(--bg2); border:1px solid var(--line); padding:13px 16px; min-width:110px;">
           <div style="font-family:var(--mono); font-size:.56rem; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem;">Approved MTD</div>
-          <div id="ret-approved" style="font-family:var(--mono); font-size:1.4rem; font-weight:700; color:var(--green);">—</div>
+          <div id="ret-approved" style="font-family:var(--mono); font-size:1.4rem; font-weight:700; color:var(--green);">-</div>
         </div>
         <div style="background:var(--bg2); border:1px solid var(--line); padding:13px 16px; min-width:110px;">
           <div style="font-family:var(--mono); font-size:.56rem; text-transform:uppercase; color:var(--muted); margin-bottom:.4rem;">Refunded MTD</div>
-          <div id="ret-refunded" style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">—</div>
+          <div id="ret-refunded" style="font-family:var(--mono); font-size:1.4rem; font-weight:700;">-</div>
         </div>
       </div>
 
@@ -346,7 +346,7 @@
 
     body.innerHTML = recentFull.map(o => {
       const u = o.users;
-      const name = u ? (u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username) : '—';
+      const name = u ? (u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username) : '-';
       return `
         <tr>
           <td class="mono">${o.order_number}</td>
@@ -434,7 +434,7 @@
 
     body.innerHTML = orders.map(o => {
       const u    = o.users;
-      const name = u ? (u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username) : '—';
+      const name = u ? (u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username) : '-';
       return `
         <tr data-status="${o.status}">
           <td class="mono">${o.order_number}</td>
@@ -570,7 +570,7 @@
       body.innerHTML = list.map(p => `
         <tr data-prod-id="${p.id}">
           <td style="font-weight:700;">${p.name}</td>
-          <td class="mono fl">${p.categories?.name || '—'}</td>
+          <td class="mono fl">${p.categories?.name || '-'}</td>
           <td class="mono">SAR ${Number(p.price).toFixed(2)}</td>
           <td class="mono">${p.stock_quantity}</td>
           <td>
@@ -680,8 +680,8 @@
 
     body.innerHTML = returns.map(r => {
       const u    = r.users;
-      const name = u ? (u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username) : '—';
-      const orderNum = r.orders?.order_number || '—';
+      const name = u ? (u.first_name ? `${u.first_name} ${u.last_name}`.trim() : u.username) : '-';
+      const orderNum = r.orders?.order_number || '-';
       const actions  = r.status === 'open'
         ? `<button class="tbl-btn grn" data-action="approved" data-id="${r.id}">Approve</button>
            <button class="tbl-btn red" data-action="rejected" data-id="${r.id}">Reject</button>`

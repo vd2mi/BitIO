@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Settings — BitIO</title>
+  <title>Settings - BitIO</title>
   <link rel="stylesheet" href="Style.css">
   <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
   <style>
@@ -140,10 +140,10 @@
       <p style="font-size:.8rem; color:var(--muted); margin-bottom:1.8rem;">Your account info.</p>
 
       <div style="display:flex; align-items:center; gap:1.2rem; padding-bottom:1.6rem; border-bottom:1px solid var(--line); margin-bottom:1.6rem;">
-        <div id="avatar" style="width:60px; height:60px; background:var(--bg2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:1.3rem; font-weight:700; color:var(--green);">—</div>
+        <div id="avatar" style="width:60px; height:60px; background:var(--bg2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:1.3rem; font-weight:700; color:var(--green);">-</div>
         <div>
-          <div id="profile-username" style="font-weight:700;">—</div>
-          <div id="profile-email" style="font-family:var(--mono); font-size:.68rem; color:var(--muted);">—</div>
+          <div id="profile-username" style="font-weight:700;">-</div>
+          <div id="profile-email" style="font-family:var(--mono); font-size:.68rem; color:var(--muted);">-</div>
         </div>
       </div>
 
@@ -390,7 +390,7 @@
     body.innerHTML = sessions.map((s, i) => `
       <tr style="border-bottom:1px solid var(--line);">
         <td style="padding:10px 0; font-weight:700;">${s.device}${i === 0 ? ' <span style="font-family:var(--mono); font-size:.6rem; color:var(--green); margin-left:.4rem;">current</span>' : ''}</td>
-        <td style="padding:10px 0; color:var(--muted);">${s.location || '—'}</td>
+        <td style="padding:10px 0; color:var(--muted);">${s.location || '-'}</td>
         <td style="padding:10px 0; font-family:var(--mono); font-size:.68rem; color:var(--muted);">${new Date(s.last_seen).toLocaleDateString()}</td>
         <td style="text-align:right;">${i > 0 ? `<button class="btn-ghost" data-sid="${s.id}">Revoke</button>` : ''}</td>
       </tr>
@@ -454,7 +454,7 @@
     container.innerHTML = addrs.map(a => `
       <div style="border:1px solid var(--line); padding:16px 18px; max-width:460px; margin-bottom:1.2rem; position:relative;">
         ${a.is_default ? '<span style="position:absolute; top:12px; right:12px; font-family:var(--mono); font-size:.58rem; color:var(--green); border:1px solid rgba(0,255,136,.25); padding:2px 7px;">default</span>' : ''}
-        <div style="font-weight:700; margin-bottom:.3rem;">${[a.first_name, a.last_name].filter(Boolean).join(' ') || '—'}</div>
+        <div style="font-weight:700; margin-bottom:.3rem;">${[a.first_name, a.last_name].filter(Boolean).join(' ') || '-'}</div>
         <div style="font-size:.82rem; color:var(--muted); line-height:1.7;">
           ${a.street}${a.line2 ? ', ' + a.line2 : ''}<br>
           ${a.city}${a.postal_code ? ' ' + a.postal_code : ''}<br>

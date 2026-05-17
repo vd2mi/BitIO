@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cart — BitIO</title>
+  <title>Cart - BitIO</title>
   <link rel="stylesheet" href="Style.css">
   <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
 </head>
@@ -42,7 +42,7 @@
         <h2 class="cart-summary-heading">Order Summary</h2>
         <div class="cart-totals">
           <div class="cart-total-row"><span>Subtotal</span><span id="summary-sub">0.00 SAR</span></div>
-          <div class="cart-total-row"><span>Shipping</span><span id="summary-ship">—</span></div>
+          <div class="cart-total-row"><span>Shipping</span><span id="summary-ship">-</span></div>
           <div class="cart-total-row cart-total-row--total"><span>Total</span><span id="summary-total">0.00 SAR</span></div>
         </div>
       </div>
@@ -212,7 +212,7 @@
     subEl.textContent    = formatMoney(sub);
     shipEl.textContent   = shipping === 0 ? 'Free' : formatMoney(shipping);
     totalEl.textContent  = formatMoney(total);
-    checkBtn.textContent = `Place Order — ${formatMoney(total)}`;
+    checkBtn.textContent = `- ${formatMoney(total)}`;
   }
 
   function showPaymentMsg(text, isErr) {
@@ -310,7 +310,7 @@
     cart.updateNavCount();
     renderCart();
 
-    document.getElementById('popup-order-number').textContent = `Order ${orderNum} — ${formatMoney(total)}`;
+    document.getElementById('popup-order-number').textContent = `Order ${orderNum} - ${formatMoney(total)}`;
     const popup = document.getElementById('order-popup');
     popup.style.display = 'flex';
   });

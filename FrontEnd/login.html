@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In — BitIO</title>
+  <title>Sign In - BitIO</title>
   <link rel="stylesheet" href="Style.css">
   <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
 </head>
@@ -247,7 +247,7 @@
           } else if (hint.includes('username')) {
             showMsg('auth-msg', 'That username is already taken. Try a different one.', true);
           } else {
-            showMsg('auth-msg', 'A duplicate value was detected — ' + profileErr.message, true);
+            showMsg('auth-msg', 'A duplicate value was detected - ' + profileErr.message, true);
           }
         } else {
           showMsg('auth-msg', 'Profile setup failed: ' + profileErr.message, true);
@@ -280,7 +280,7 @@
     if (error) {
       showMsg('reset-msg', error.message, true);
     } else {
-      showMsg('reset-msg', 'Reset link sent — check your inbox.', false);
+      showMsg('reset-msg', 'Reset link sent - check your inbox.', false);
       document.getElementById('btn-reset').style.display = 'none';
     }
   });

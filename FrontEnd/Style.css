@@ -173,7 +173,7 @@ nav a:hover { color: var(--text); }
 }
 .btn-buy:hover { background: var(--green); color: #000; border-color: var(--green); }
 
-/* footer */
+
 
 footer {
   padding: 26px 48px; background: var(--bg2); border-top: 1px solid var(--line);
@@ -184,7 +184,7 @@ footer a   { font-family: var(--mono); font-size: .68rem; color: var(--muted); t
 footer a:hover { color: var(--text); }
 footer small { font-family: var(--mono); font-size: .62rem; color: var(--muted); opacity: .45; }
 
-/* search bar — doesn't filter yet but placeholder is good enough for now */
+
 
 .prod-search {
   color: var(--text);
@@ -202,7 +202,7 @@ footer small { font-family: var(--mono); font-size: .62rem; color: var(--muted);
 .prod-search:focus { border-color: var(--green); }
 .prod-search::placeholder { color: var(--muted); }
 
-/* category filter chips */
+
 
 .prod-filters {
   display: flex;
@@ -239,7 +239,7 @@ footer small { font-family: var(--mono); font-size: .62rem; color: var(--muted);
 }
 .prod-section:first-child .prod-cat-heading { border-top: none; padding-top: 0; }
 
-/* extra nav items we added — sign in link + cart as a real link */
+
 
 .nav-auth {
   font-family: var(--mono);
@@ -346,7 +346,7 @@ a.nav-cart:hover { color: var(--text); }
   cursor: pointer;
   position: relative;
 }
-/* tab active state driven by the radio inputs — no js needed */
+
 .tab-radio { display: none; }
 
 #tab-signin:checked ~ main #form-signup,

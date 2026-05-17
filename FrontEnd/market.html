@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Market — BitIO</title>
+  <title>Market - BitIO</title>
   <link rel="stylesheet" href="Style.css">
   <script>try{if(localStorage.getItem('bitio-theme')==='dark')document.documentElement.classList.remove('light');}catch(e){}</script>
   <style>
@@ -118,9 +118,9 @@
       <p style="font-size:.82rem; color:var(--muted); max-width:400px; line-height:1.7;">Stock overview, pricing, and demand for everything we carry. Updated daily.</p>
     </div>
     <div style="text-align:right; font-family:var(--mono); font-size:.63rem; color:var(--muted); line-height:1.9;">
-      <strong id="mkt-count" style="display:block; font-size:1.15rem; color:var(--green); margin-bottom:.1rem;">—</strong>
+      <strong id="mkt-count" style="display:block; font-size:1.15rem; color:var(--green); margin-bottom:.1rem;">-</strong>
       products listed<br>
-      <span id="mkt-date">—</span>
+      <span id="mkt-date">-</span>
     </div>
   </div>
 
@@ -143,7 +143,7 @@
         <p style="font-family:var(--mono); font-size:.72rem; color:var(--muted);">Loading...</p>
       </div>
 
-      <p class="slbl">Low stock — act fast</p>
+      <p class="slbl">Low stock - Need to restock</p>
       <div id="low-stock" style="margin-bottom:1.8rem;">
         <p style="font-family:var(--mono); font-size:.72rem; color:var(--muted);">Loading...</p>
       </div>
@@ -219,7 +219,7 @@
       const isLow  = p.stock_quantity <= 10;
       const isHigh = (p._sold || 0) >= 50;
       const cls    = isLow ? 'dn' : isHigh ? 'up' : 'fl';
-      const label  = isLow ? '▼ low stock' : isHigh ? '▲ trending' : '— stable';
+      const label  = isLow ? '▼ low stock' : isHigh ? '▲ trending' : '- stable';
       return `<span class="tick"><span class="name">${p.name.substring(0, 18)}</span><span class="price">${fmt(p.price)}</span><span class="${cls}">${label}</span></span>`;
     }
 
@@ -260,7 +260,7 @@
       const totalSold = catProds.reduce((s, p) => s + (p._sold || 0), 0);
       const priceRange = prices.length
         ? `${fmt(Math.min(...prices))} – ${fmt(Math.max(...prices))}`
-        : '—';
+        : '-';
       const dmndCls   = demandClass(totalSold / Math.max(catProds.length, 1));
       const dmndLbl   = demandLabel(totalSold / Math.max(catProds.length, 1));
       return `
@@ -350,7 +350,7 @@
         ? `<span class="tr-up">↑ +${trend}%</span>`
         : trend < 0
           ? `<span class="tr-dn">↓ ${trend}%</span>`
-          : `<span class="tr-fl">— flat</span>`;
+          : `<span class="tr-fl">- flat</span>`;
       const statusHtml = outOfStock
         ? `<span class="av av-low">Out of stock</span>`
         : lowStock
@@ -429,7 +429,7 @@
     
     const enriched = products.map(p => ({
       ...p,
-      _catName: catById[p.category_id] || '—',
+      _catName: catById[p.category_id] || '-',
       _sold:    metMap[p.id]?.sold  || 0,
       _trend:   metMap[p.id]?.trend || 0,
     }));
@@ -449,7 +449,7 @@
     buildTable(enriched, enriched);
 
     document.getElementById('mkt-table-note').textContent =
-      `Showing ${enriched.length} product${enriched.length !== 1 ? 's' : ''} — stock counts updated today`;
+      `Showing ${enriched.length} product${enriched.length !== 1 ? 's' : ''} - stock counts updated today`;
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
