@@ -29,7 +29,21 @@ const auth = {
       .select('*')
       .eq('email', this.user.email)
       .maybeSingle();
-    this.profile = data;
+
+    if (data) {
+      this.profile = data;
+      return;
+    }
+
+    const username = this.user.email.split('@')[0].replace(/[^a-z0-9_]/gi, '_');
+    const { data: created } = await db.from('users').insert({
+      username,
+      email:         this.user.email,
+      password_hash: 'managed_by_supabase_auth',
+      role:          'customer',
+      status:        'active'
+    }).select().single();
+    this.profile = created;
   },
 
   _updateNav() {
