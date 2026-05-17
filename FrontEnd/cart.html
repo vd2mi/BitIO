@@ -236,6 +236,11 @@
       return;
     }
 
+    if (!auth.profile) {
+      showPaymentMsg('Could not load your profile. Please refresh the page and try again.', true);
+      return;
+    }
+
     const cardName = document.getElementById('card-name').value.trim();
     const cardNum  = document.getElementById('card-num').value.trim();
     const cardExp  = document.getElementById('card-exp').value.trim();
